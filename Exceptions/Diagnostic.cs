@@ -4,16 +4,16 @@ namespace BifyLang.Exceptions;
 
 public enum DiagnosticKind
 {
-    Type,
-    Syntax,
-    Name,
-    Attribute,
-    Cast,
-    Arithmetic,
-    Overflow,
-    Import,
-    CircularInheritance,
-    Unknown,
+    TYPE,
+    SYNTAX,
+    NAME,
+    ATTRIBUTE,
+    CAST,
+    ARITHMETIC,
+    OVERFLOW,
+    IMPORT,
+    CIRCULAR_INHERITANCE,
+    UNKNOWN,
 }
 
 public sealed record SourceLocation(

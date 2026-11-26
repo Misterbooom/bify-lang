@@ -88,7 +88,7 @@ public class StructLayoutTests : BifyTestBase
         func main() {}
         """;
 
-        AssertCompileError(code, DiagnosticKind.Type);
+        AssertCompileError(code, DiagnosticKind.TYPE);
     }
 
     [Test]
@@ -105,14 +105,14 @@ public class StructLayoutTests : BifyTestBase
         func main() {}
         """;
 
-        AssertCompileError(code, DiagnosticKind.Type);
+        AssertCompileError(code, DiagnosticKind.TYPE);
     }
 
     [Test]
     public void StructLayout_ConstructorAndDestructorRejected()
     {
-        AssertCompileError("struct A { constructor() {} } func main() {}", DiagnosticKind.Type);
-        AssertCompileError("struct B { destructor() {} } func main() {}", DiagnosticKind.Type);
+        AssertCompileError("struct A { constructor() {} } func main() {}", DiagnosticKind.TYPE);
+        AssertCompileError("struct B { destructor() {} } func main() {}", DiagnosticKind.TYPE);
     }
 
     [TestCase("virtual", TestName = "StructMethodFlag_VirtualRejected")]
@@ -128,7 +128,7 @@ public class StructLayoutTests : BifyTestBase
         func main() {}
         """;
 
-        AssertCompileError(code, DiagnosticKind.Attribute);
+        AssertCompileError(code, DiagnosticKind.ATTRIBUTE);
     }
 
     [TestCase("weak", TestName = "StructFieldFlag_WeakRejected")]
@@ -142,16 +142,16 @@ public class StructLayoutTests : BifyTestBase
         func main() {}
         """;
 
-        AssertCompileError(code, DiagnosticKind.Attribute);
+        AssertCompileError(code, DiagnosticKind.ATTRIBUTE);
     }
 
     [Test]
     public void StructLayout_NameConflictsRejected()
     {
-        AssertCompileError("struct Dup { mut x: int; } struct Dup { mut y: int; } func main() {}", DiagnosticKind.Name);
-        AssertCompileError("struct DupField { mut x: int; mut x: float; } func main() {}", DiagnosticKind.Name);
-        AssertCompileError("struct DupMethod { func f() {} func f() {} } func main() {}", DiagnosticKind.Name);
-        AssertCompileError("struct FieldMethodClash { mut x: int; func x() {} } func main() {}", DiagnosticKind.Name);
+        AssertCompileError("struct Dup { mut x: int; } struct Dup { mut y: int; } func main() {}", DiagnosticKind.NAME);
+        AssertCompileError("struct DupField { mut x: int; mut x: float; } func main() {}", DiagnosticKind.NAME);
+        AssertCompileError("struct DupMethod { func f() {} func f() {} } func main() {}", DiagnosticKind.NAME);
+        AssertCompileError("struct FieldMethodClash { mut x: int; func x() {} } func main() {}", DiagnosticKind.NAME);
     }
 
     [Test]
@@ -164,7 +164,7 @@ public class StructLayoutTests : BifyTestBase
         func main() {}
         """;
 
-        AssertCompileError(code, DiagnosticKind.Type);
+        AssertCompileError(code, DiagnosticKind.TYPE);
     }
 
     [Test]
@@ -180,6 +180,6 @@ public class StructLayoutTests : BifyTestBase
         func main() {}
         """;
 
-        AssertCompileError(code, DiagnosticKind.Type);
+        AssertCompileError(code, DiagnosticKind.TYPE);
     }
 }

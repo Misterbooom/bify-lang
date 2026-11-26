@@ -5,13 +5,13 @@ namespace BifyLang.CodeGen.Core.Validators;
 
 public static class FlagChecker
 {
-    private static readonly HashSet<string> AllowedFunctionFlags =
+    private static readonly HashSet<string> _allowedFunctionFlags =
     [
         "public",
         "private"
     ];
 
-    private static readonly HashSet<string> AllowedMethodFlags =
+    private static readonly HashSet<string> _allowedMethodFlags =
     [
         "public",
         "private",
@@ -19,12 +19,12 @@ public static class FlagChecker
         "virtual",
         "override"
     ];
-    private static readonly HashSet<string> AllowedStructMethodFlags =
+    private static readonly HashSet<string> _allowedStructMethodFlags =
     [
         "public",
         "private",
     ];
-    private static readonly HashSet<string> AllowedAttributeFlags =
+    private static readonly HashSet<string> _allowedAttributeFlags =
     [
         "public",
         "private",
@@ -33,27 +33,35 @@ public static class FlagChecker
         "mut",
         "val"
     ];
-    private static readonly HashSet<string> AllowedStructAttributeFlags =
+    private static readonly HashSet<string> _allowedStructAttributeFlags =
     [
         "public",
         "private",
         "mut",
         "val"
     ];
-    private static readonly HashSet<string> AllowedClassFlags =
+    private static readonly HashSet<string> _allowedClassFlags =
     [
         "public",
-        "private"
+        "private",
+        "static",
+        "final",
+        "abstract"
     ];
 
-    private static readonly HashSet<string> AllowedVariableFlags =
+    private static readonly HashSet<string> _allowedStructFlags = [
+        "public",
+        "private",
+    ];
+
+    private static readonly HashSet<string> _allowedVariableFlags =
     [
         "mut",
         "val",
         "weak"
     ];
 
-    private static readonly HashSet<string> AllowedParameterFlags =
+    private static readonly HashSet<string> _allowedParameterFlags =
     [
         "mut",
         "val"
@@ -65,7 +73,7 @@ public static class FlagChecker
     {
         return Check(
             flags,
-            AllowedFunctionFlags,
+            _allowedFunctionFlags,
             "function",
             out error
         );
@@ -75,7 +83,7 @@ public static class FlagChecker
         IEnumerable<string> flags,
         out string? error)
     {
-        if (!Check(flags, AllowedMethodFlags, "method", out error))
+        if (!Check(flags, _allowedMethodFlags, "method", out error))
             return false;
 
         var flagList = flags.ToList();
@@ -94,7 +102,7 @@ public static class FlagChecker
     {
         return Check(
             flags,
-            AllowedAttributeFlags,
+            _allowedAttributeFlags,
             "attribute",
             out error
         );
@@ -106,7 +114,7 @@ public static class FlagChecker
     {
         return Check(
             flags,
-            AllowedClassFlags,
+            _allowedClassFlags,
             "class",
             out error
         );
@@ -117,7 +125,7 @@ public static class FlagChecker
     {
         return Check(
             flags,
-            AllowedStructAttributeFlags,
+            _allowedStructAttributeFlags,
             "struct",
             out error
         );
@@ -128,7 +136,7 @@ public static class FlagChecker
     {
         return Check(
             flags,
-            AllowedStructMethodFlags,
+            _allowedStructMethodFlags,
             "struct method",
             out error
         );
@@ -140,7 +148,7 @@ public static class FlagChecker
     {
         return Check(
             flags,
-            AllowedVariableFlags,
+            _allowedVariableFlags,
             "variable",
             out error
         );
@@ -152,8 +160,18 @@ public static class FlagChecker
     {
         return Check(
             flags,
-            AllowedParameterFlags,
+            _allowedParameterFlags,
             "parameter",
+            out error
+        );
+    }
+
+    public static bool CheckStructFlags(IEnumerable<string> flags, out string? error)
+    {
+        return Check(
+            flags,
+            _allowedStructFlags,
+            "struct",
             out error
         );
     }

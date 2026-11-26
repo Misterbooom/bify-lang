@@ -50,7 +50,7 @@ public static class BifyAssert
         return captured;
     }
 
-    public static Diagnostic ParseError(string code, DiagnosticKind expectedKind = DiagnosticKind.Syntax, string? expectedSubstring = null)
+    public static Diagnostic ParseError(string code, DiagnosticKind expectedKind = DiagnosticKind.SYNTAX, string? expectedSubstring = null)
     {
         DiagnosticBag diagnostics = new();
         try

@@ -11,7 +11,7 @@ namespace BifyLang.Ast.Handlers
             {
                 Builder.Fail(
                     "Assignment operator used without a preceding expression. Please ensure an identifier is present before '='.",
-                    DiagnosticKind.Syntax,
+                    DiagnosticKind.SYNTAX,
                     token
                 );
             }
@@ -23,7 +23,7 @@ namespace BifyLang.Ast.Handlers
             {
                 Builder.Fail(
                     "Unexpected use of the assignment operator. Check the syntax and try again.",
-                    DiagnosticKind.Syntax,
+                    DiagnosticKind.SYNTAX,
                     token
                 );
             }
@@ -39,7 +39,7 @@ namespace BifyLang.Ast.Handlers
                 var valueNode = Builder.ParseTokens(valueTokens);
                 if (valueNode == null)
                 {
-                    Builder.Fail(ErrorMessage.EmptyValueAssigned(), DiagnosticKind.Syntax, token);
+                    Builder.Fail(ErrorMessage.EmptyValueAssigned(), DiagnosticKind.SYNTAX, token);
                 }
                 Builder.Nodes.Clear();
                 Builder.CurrentNode = new AstAssignmentOperator(token, identifierNode, valueNode);
@@ -49,7 +49,7 @@ namespace BifyLang.Ast.Handlers
             {
                 Builder.Fail(
                     "Assignment operator must follow an identifier or index operator or member access.",
-                    DiagnosticKind.Syntax,
+                    DiagnosticKind.SYNTAX,
                     node.Token ?? token
                 );
             }

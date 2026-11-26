@@ -14,7 +14,7 @@ namespace BifyLang.Ast.Validators
             {
                 builder.Fail(
                     $"'{node.GetType().Name.Replace("Ast", "")}' Cannot be returned",
-                    DiagnosticKind.Type,
+                    DiagnosticKind.TYPE,
                     node.Token
                 );
             }

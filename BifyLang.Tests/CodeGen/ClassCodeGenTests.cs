@@ -123,7 +123,7 @@ public class ClassCodeGenTests : BifyTestBase
             b.value = 42;
         }
         """;
-        BifyAssert.CompileError(code, DiagnosticKind.Type);
+        BifyAssert.CompileError(code, DiagnosticKind.TYPE);
     }
 
     [Test]
@@ -138,7 +138,7 @@ public class ClassCodeGenTests : BifyTestBase
             val x: int = s.value;
         }
         """;
-        BifyAssert.CompileError(code, DiagnosticKind.Attribute);
+        BifyAssert.CompileError(code, DiagnosticKind.ATTRIBUTE);
     }
 
     [Test]
@@ -155,7 +155,7 @@ public class ClassCodeGenTests : BifyTestBase
             val x: int = s.get();
         }
         """;
-        BifyAssert.CompileError(code, DiagnosticKind.Attribute);
+        BifyAssert.CompileError(code, DiagnosticKind.ATTRIBUTE);
     }
 
     [Test]
@@ -347,7 +347,7 @@ public class ClassCodeGenTests : BifyTestBase
             val x: int = c.secret;
         }
         """;
-        BifyAssert.CompileError(code, DiagnosticKind.Attribute);
+        BifyAssert.CompileError(code, DiagnosticKind.ATTRIBUTE);
     }
 
     [Test]
@@ -359,7 +359,7 @@ public class ClassCodeGenTests : BifyTestBase
         func test() {
         }
         """;
-        BifyAssert.CompileError(code, DiagnosticKind.Type);
+        BifyAssert.CompileError(code, DiagnosticKind.TYPE);
     }
 
     [Test]

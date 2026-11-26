@@ -9,17 +9,17 @@ namespace BifyLang.Ast.Validators
         {
             if (nameToken == null || (nameToken.Type != TokenType.IDENTIFIER && nameToken.Type != TokenType.CONSTRUCTOR && nameToken.Type != TokenType.DESTRUCTOR))
             {
-                builder.Fail(ErrorMessage.ExpectedFunctionName(), DiagnosticKind.Syntax, nameToken ?? typeNode?.Token);
+                builder.Fail(ErrorMessage.ExpectedFunctionName(), DiagnosticKind.SYNTAX, nameToken ?? typeNode?.Token);
             }
 
             if (nameToken?.Type == TokenType.DESTRUCTOR && parametersNode != null)
             {
-                builder.Fail("Destructor cannot have parameters.", DiagnosticKind.Syntax, nameToken);
+                builder.Fail("Destructor cannot have parameters.", DiagnosticKind.SYNTAX, nameToken);
             }
 
             if (typeNode == null || (typeNode is not AstIdentifier && typeNode.Token.Type != TokenType.POINTER && typeNode is not AstIndexOperator))
             {
-                builder.Fail(ErrorMessage.InvalidFunctionType(), DiagnosticKind.Type, typeNode?.Token ?? nameToken);
+                builder.Fail(ErrorMessage.InvalidFunctionType(), DiagnosticKind.TYPE, typeNode?.Token ?? nameToken);
             }
         }
     }

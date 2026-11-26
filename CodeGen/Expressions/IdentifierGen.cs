@@ -45,7 +45,7 @@ public static class IdentifierGen
             return new TypedValue(default, moduleType);
         }
 
-        return ctx.Fail<TypedValue>($"Variable '{name}' is not defined", DiagnosticKind.Name, identifier);
+        return ctx.Fail<TypedValue>($"Variable '{name}' is not defined", DiagnosticKind.NAME, identifier);
     }
 
     private static TypedValue LoadSymbol(CodeGenContext ctx, Symbol symbol)

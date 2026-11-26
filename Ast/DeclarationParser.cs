@@ -12,13 +12,13 @@ internal class DeclarationParser(AstBuilder builder)
 
     private static Dictionary<TokenType, DeclarationKind> _kindMap = new()
     {
-        { TokenType.VAL, DeclarationKind.Variable },
-        { TokenType.MUT, DeclarationKind.Variable },
-        { TokenType.FUNCTION, DeclarationKind.Function },
-        { TokenType.CLASS, DeclarationKind.Class },
-        { TokenType.STRUCT, DeclarationKind.Struct },
-        {TokenType.CONSTRUCTOR, DeclarationKind.Function},
-        {TokenType.DESTRUCTOR, DeclarationKind.Function},
+        { TokenType.VAL, DeclarationKind.VARIABLE },
+        { TokenType.MUT, DeclarationKind.VARIABLE },
+        { TokenType.FUNCTION, DeclarationKind.FUNCTION },
+        { TokenType.CLASS, DeclarationKind.CLASS },
+        { TokenType.STRUCT, DeclarationKind.STRUCT },
+        {TokenType.CONSTRUCTOR, DeclarationKind.FUNCTION},
+        {TokenType.DESTRUCTOR, DeclarationKind.FUNCTION},
     };
 
     public bool TryParseDeclaration(out DeclarationHeader header)
@@ -42,7 +42,7 @@ internal class DeclarationParser(AstBuilder builder)
 
         DeclarationKind kind = _kindMap[keyToken.Type];
         BifyDebug.Log("Find kind: "  + kind);
-        if (kind == DeclarationKind.Variable)
+        if (kind == DeclarationKind.VARIABLE)
         {
             flags.Add(new AstIdentifier(keyToken, keyToken.Value));
         }
@@ -55,11 +55,11 @@ internal class DeclarationParser(AstBuilder builder)
         int bodyStartIndex;
         AstNode typeNode = kind switch
         {
-            DeclarationKind.Variable => ParseVariableType(tokens, ref i, keyToken, out endIndex,
+            DeclarationKind.VARIABLE => ParseVariableType(tokens, ref i, keyToken, out endIndex,
                 out bodyStartIndex),
-            DeclarationKind.Function => ParseFunctionType(tokens, ref i, keyToken, out endIndex,
+            DeclarationKind.FUNCTION => ParseFunctionType(tokens, ref i, keyToken, out endIndex,
                 out  bodyStartIndex),
-            DeclarationKind.Class or DeclarationKind.Struct => ParseParent(tokens, ref i, keyToken, out endIndex,
+            DeclarationKind.CLASS or DeclarationKind.STRUCT => ParseParent(tokens, ref i, keyToken, out endIndex,
                 out  bodyStartIndex),
             _ => throw new InvalidOperationException("Unexpected declaration kind."),
         };
@@ -101,7 +101,7 @@ internal class DeclarationParser(AstBuilder builder)
         {
             _builder.Fail(
                 $"Expected '(' after '{ctorToken.Value}'.",
-                DiagnosticKind.Syntax,
+                DiagnosticKind.SYNTAX,
                 i < tokens.Count ? tokens[i] : ctorToken
             );
         }
@@ -109,12 +109,12 @@ internal class DeclarationParser(AstBuilder builder)
         int closeParen = FindClosing(tokens, i, TokenType.LPAREN, TokenType.RPAREN);
         if (closeParen < 0)
         {
-            _builder.Fail($"Expected ')' in '{ctorToken.Value}' declaration.", DiagnosticKind.Syntax, tokens[i]);
+            _builder.Fail($"Expected ')' in '{ctorToken.Value}' declaration.", DiagnosticKind.SYNTAX, tokens[i]);
         }
 
         header = new DeclarationHeader
         {
-            Kind = DeclarationKind.Function,
+            Kind = DeclarationKind.FUNCTION,
             FlagNode = CreateFlagNode(flags, ctorToken),
             NameNode = new AstIdentifier(ctorToken, ctorToken.Value),
             TypeNode = CreateVoidType(ctorToken),
@@ -196,7 +196,7 @@ internal class DeclarationParser(AstBuilder builder)
         {
             _builder.Error(
                 "Expected '(' after function name.",
-                DiagnosticKind.Syntax,
+                DiagnosticKind.SYNTAX,
                 i < tokens.Count ? tokens[i] : fallbackToken
             );
             endIndex = i;
@@ -225,7 +225,7 @@ internal class DeclarationParser(AstBuilder builder)
     {
         if (typeTokens.Count == 0)
         {
-            _builder.Error(emptyMessage, DiagnosticKind.Syntax, anchorToken);
+            _builder.Error(emptyMessage, DiagnosticKind.SYNTAX, anchorToken);
             return new AstPoison(anchorToken);
         }
 
@@ -238,14 +238,14 @@ internal class DeclarationParser(AstBuilder builder)
 
         if (suffixStart == 0)
         {
-            _builder.Error("Invalid type annotation.", DiagnosticKind.Type, typeTokens[0]);
+            _builder.Error("Invalid type annotation.", DiagnosticKind.TYPE, typeTokens[0]);
             return new AstPoison(typeTokens[0]);
         }
 
         AstNode? typeNode = _builder.ParseTokens(typeTokens[..suffixStart]);
         if (typeNode == null)
         {
-            _builder.Error("Invalid type annotation.", DiagnosticKind.Type, typeTokens[0]);
+            _builder.Error("Invalid type annotation.", DiagnosticKind.TYPE, typeTokens[0]);
             return new AstPoison(typeTokens[0]);
         }
 
@@ -264,7 +264,7 @@ internal class DeclarationParser(AstBuilder builder)
                 int closeIdx = FindClosing(typeTokens, idx, TokenType.LBRACKET, TokenType.RBRACKET);
                 if (closeIdx < 0)
                 {
-                    _builder.Error("Expected ']' in array type.", DiagnosticKind.Syntax, tok);
+                    _builder.Error("Expected ']' in array type.", DiagnosticKind.SYNTAX, tok);
                     return new AstPoison(tok);
                 }
 
@@ -275,7 +275,7 @@ internal class DeclarationParser(AstBuilder builder)
             }
             else
             {
-                _builder.Error($"Unexpected token '{tok.Value}' in type annotation.", DiagnosticKind.Type, tok);
+                _builder.Error($"Unexpected token '{tok.Value}' in type annotation.", DiagnosticKind.TYPE, tok);
                 return new AstPoison(tok);
             }
         }

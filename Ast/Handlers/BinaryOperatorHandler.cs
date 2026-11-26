@@ -99,7 +99,7 @@ namespace BifyLang.Ast.Handlers
             {
                 Builder.Fail(
                     $"Unexpected end of expression. Please check that your expression is complete.: {Builder.GetPreviousToken()}",
-                    DiagnosticKind.Syntax,
+                    DiagnosticKind.SYNTAX,
                     Builder.GetPreviousToken()
                 );
             }
@@ -122,7 +122,7 @@ namespace BifyLang.Ast.Handlers
                 TokenType.NEW => new NewHandler(Builder).ParseNewExpression(token),
                 _ => Builder.Fail<AstNode>(
                     $"Unexpected token '{token.Value}'.",
-                    DiagnosticKind.Syntax,
+                    DiagnosticKind.SYNTAX,
                     token
                 )
             };
@@ -214,7 +214,7 @@ namespace BifyLang.Ast.Handlers
                 {
                     if (group.Count == 0)
                     {
-                        Builder.Error($"Argument #{argIndex + 1}: Empty argument.", DiagnosticKind.Syntax, null);
+                        Builder.Error($"Argument #{argIndex + 1}: Empty argument.", DiagnosticKind.SYNTAX, null);
                         isPoison = true;
                         argIndex++;
                         continue;
@@ -231,7 +231,7 @@ namespace BifyLang.Ast.Handlers
                     {
                         Builder.Error(
                             $"Argument #{argIndex + 1}: Expected expression after ':'.",
-                            DiagnosticKind.Syntax,
+                            DiagnosticKind.SYNTAX,
                             group[1]
                         );
                         isPoison = true;
@@ -248,7 +248,7 @@ namespace BifyLang.Ast.Handlers
                         {
                             Builder.Error(
                                 $"Argument #{argIndex + 1}: Invalid argument expression.",
-                                DiagnosticKind.Syntax,
+                                DiagnosticKind.SYNTAX,
                                 valueTokens[0]
                             );
                         }
@@ -275,7 +275,7 @@ namespace BifyLang.Ast.Handlers
                     {
                         Builder.Error(
                             $"Argument #{argIndex + 1}: Invalid argument expression.",
-                            DiagnosticKind.Syntax,
+                            DiagnosticKind.SYNTAX,
                             group.Count > 0 ? group[0] : null
                         );
                     }

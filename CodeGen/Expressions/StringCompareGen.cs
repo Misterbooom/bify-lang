@@ -15,7 +15,7 @@ public class StringCompareGen(CodeGenContext ctx) : CodeGenBase(ctx)
     public TypedValue Emit(TokenType op, LLVMValueRef left, LLVMValueRef right)
     {
         if (op is not (TokenType.EQ or TokenType.EQEQ or TokenType.NEQ))
-            return Fail<TypedValue>($"Unsupported string comparison operator: {op}", DiagnosticKind.Syntax);
+            return Fail<TypedValue>($"Unsupported string comparison operator: {op}", DiagnosticKind.SYNTAX);
 
         var (strcmpFn, strcmpType) = BuiltinFunctions.GetOrDeclareStrcmp(_ctx);
         var cmpResult = _ctx.Builder.BuildCall2(strcmpType, strcmpFn, new[] { left, right }, "strcmp_res");

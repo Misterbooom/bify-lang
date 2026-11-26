@@ -66,8 +66,8 @@ public static class ErrorFormatter
         if (rawLine is null)
             return;
 
-        const string Tab = "    ";
-        string expandedLine = rawLine.Replace("\t", Tab);
+        const string tab = "    ";
+        string expandedLine = rawLine.Replace("\t", tab);
         string trimmedLine = expandedLine.TrimStart(' ');
         int trimmedSpaces = expandedLine.Length - trimmedLine.Length;
 
@@ -77,7 +77,7 @@ public static class ErrorFormatter
         if (columnNumber > 0)
         {
             int zeroBasedCol = Math.Clamp(columnNumber - 1, 0, rawLine.Length);
-            int visualCol = rawLine[..zeroBasedCol].Replace("\t", Tab).Length;
+            int visualCol = rawLine[..zeroBasedCol].Replace("\t", tab).Length;
             int caretOffset = Math.Max(0, visualCol - trimmedSpaces);
 
             string gutterSpaces = new string(' ', lineNumStr.Length);

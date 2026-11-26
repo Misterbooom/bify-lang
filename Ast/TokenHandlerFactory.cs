@@ -19,7 +19,7 @@ internal static class TokenHandlerFactory
             {
                 return builder.Fail<TokenHandler>(
                     "Only a assignment, call, increment, decrement and new object expressions can be used as a statement.",
-                    DiagnosticKind.Syntax,
+                    DiagnosticKind.SYNTAX,
                     token
                 );
             }
@@ -32,11 +32,11 @@ internal static class TokenHandlerFactory
             if (new DeclarationParser(builder).TryParseDeclaration(out var declarationHeader))
             {
                 BifyDebug.Log("Declaration kind: " + declarationHeader.Kind);
-                if (declarationHeader.Kind == DeclarationKind.Variable)
+                if (declarationHeader.Kind == DeclarationKind.VARIABLE)
                 {
                     return new VariableDeclarationHandler(builder, declarationHeader);
                 }
-                else if (declarationHeader.Kind is (DeclarationKind.Class or DeclarationKind.Struct))
+                else if (declarationHeader.Kind is (DeclarationKind.CLASS or DeclarationKind.STRUCT))
                 {
                     BifyDebug.Log("Handling type.");
                     return new ClassHandler(builder, declarationHeader);

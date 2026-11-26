@@ -56,7 +56,7 @@ public class StructLayoutBuilder(CodeGenContext ctx) : LayoutBuilder(ctx)
                 if (HasCycle(type, [], []))
                 {
                     _ctx.TypeRegistry.RegisterPoison(type.FullName);
-                    Fail($"Cyclic struct dependency involving '{type.Name}'.", DiagnosticKind.Type, structNode);
+                    Fail($"Cyclic struct dependency involving '{type.Name}'.", DiagnosticKind.TYPE, structNode);
                 }
 
                 FinalizeStructBody(type, structNode.NameNode);
@@ -95,15 +95,19 @@ public class StructLayoutBuilder(CodeGenContext ctx) : LayoutBuilder(ctx)
             {
 
                 _ctx.TypeRegistry.RegisterPoison(mangledName);
-                return Fail<StructType>("Structs cannot inherit from other types.", DiagnosticKind.Type, structNode.ParentNode);
+                return Fail<StructType>("Structs cannot inherit from other types.", DiagnosticKind.TYPE, structNode.ParentNode);
             }
 
             var structType = new StructType(rawName, mangledName, _ctx.Context.CreateNamedStruct(mangledName),
-                module.Name);
+                module.Name)
+            {
+                Flags = MemberResolver.ResolveTypeFlags(ctx,structNode),
+            };
             if (_ctx.TypeRegistry.TryGetType(mangledName, out var _))
             {
-                Error($"Struct with name '{rawName}' already exists in module '{module.Name}'.", DiagnosticKind.Name, structNode.NameNode);
+                Error($"Struct with name '{rawName}' already exists in module '{module.Name}'.", DiagnosticKind.NAME, structNode.NameNode);
             }
+            BifyDebug.Log($"Adding struct with name '{mangledName}'.");
             _ctx.TypeRegistry.Register(mangledName, structType);
             _ctx.ModuleContext.TypesInfo[mangledName] = structType;
             return structType;
@@ -122,21 +126,21 @@ public class StructLayoutBuilder(CodeGenContext ctx) : LayoutBuilder(ctx)
 
             if (structType.Fields.ContainsKey(name))
             {
-                Error($"Duplicate field '{name}' in struct '{structType.Name}'.", DiagnosticKind.Name, varDecl);
+                Error($"Duplicate field '{name}' in struct '{structType.Name}'.", DiagnosticKind.NAME, varDecl);
                 continue;
             }
 
             if (structType.Methods.ContainsKey(name) || name == DestructorSynthesizer.DestructorName)
             {
                 Error($"Field '{name}' in struct '{structType.Name}' conflicts with existing method.",
-                    DiagnosticKind.Name, varDecl);
+                    DiagnosticKind.NAME, varDecl);
                 continue;
             }
 
             var field = ClassMemberCollector.CollectFieldOrPoison(varDecl, _ctx, structType, name, nextIndex);
             if (field.Type is ReferenceType)
             {
-                Error("Structs cannot contain reference fields.", DiagnosticKind.Type, varDecl);
+                Error("Structs cannot contain reference fields.", DiagnosticKind.TYPE, varDecl);
                 continue;
             }
 
@@ -158,13 +162,13 @@ public class StructLayoutBuilder(CodeGenContext ctx) : LayoutBuilder(ctx)
             if (structType.Fields.ContainsKey(name))
             {
                 Error($"Method '{name}' in struct '{structType.Name}' conflicts with existing field.",
-                    DiagnosticKind.Name, funcDecl);
+                    DiagnosticKind.NAME, funcDecl);
                 continue;
             }
 
             if (name is "destructor" or "constructor")
             {
-                Error($"Struct '{structType.Name}' cannot declare a {name}.", DiagnosticKind.Type, funcDecl);
+                Error($"Struct '{structType.Name}' cannot declare a {name}.", DiagnosticKind.TYPE, funcDecl);
                 continue;
             }
 
@@ -179,7 +183,7 @@ public class StructLayoutBuilder(CodeGenContext ctx) : LayoutBuilder(ctx)
             var method = ClassMemberCollector.CollectMethod(funcDecl, _ctx, structType);
 
             if (structType.Methods.ContainsKey(name) && !method.IsOverride)
-                Fail($"Duplicate method '{name}' in struct '{structType.FullName}'.", DiagnosticKind.Name, funcDecl);
+                Error($"Duplicate method '{name}' in struct '{structType.FullName}'.", DiagnosticKind.NAME, funcDecl);
 
             structType.Methods[name] = method;
         }
@@ -202,7 +206,7 @@ public class StructLayoutBuilder(CodeGenContext ctx) : LayoutBuilder(ctx)
 
         if (elementTypes.Count == 0)
         {
-            Fail("Structs must have at least one field.", DiagnosticKind.Syntax, callSite);
+            Error("Structs must have at least one field.", DiagnosticKind.SYNTAX, callSite);
         }
         structType.LlvmStructType.StructSetBody(elementTypes.ToArray(), false);
     }

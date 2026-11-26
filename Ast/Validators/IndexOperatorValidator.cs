@@ -9,12 +9,12 @@ namespace BifyLang.Ast.Validators
         {
             if (previousNode == null || !IsIndexableNode(previousNode))
             {
-                builder.Fail(ErrorMessage.InvalidIndexTarget(), DiagnosticKind.Syntax, previousNode?.Token);
+                builder.Fail(ErrorMessage.InvalidIndexTarget(), DiagnosticKind.SYNTAX, previousNode?.Token);
             }
 
             if (indexNode != null && !IsValidIndexNode(indexNode))
             {
-                builder.Fail(ErrorMessage.InvalidIndexExpression(), DiagnosticKind.Syntax, indexNode.Token);
+                builder.Fail(ErrorMessage.InvalidIndexExpression(), DiagnosticKind.SYNTAX, indexNode.Token);
             }
 
             return true;

@@ -6,17 +6,17 @@ namespace BifyLang.Ast.Validators
     {
         public static void ThrowUnmatchedIfError(AstBuilder builder, AstElse astElse)
         {
-            builder.Fail(ErrorMessage.ElseWithoutMatchingIf(), DiagnosticKind.Syntax, astElse.Token);
+            builder.Fail(ErrorMessage.ElseWithoutMatchingIf(), DiagnosticKind.SYNTAX, astElse.Token);
         }
 
         public static void ThrowUnmatchedIfError(AstBuilder builder, AstElseIf astElseIf)
         {
-            builder.Fail(ErrorMessage.ElseIfWithoutMatchingIf(), DiagnosticKind.Syntax, astElseIf.Token);
+            builder.Fail(ErrorMessage.ElseIfWithoutMatchingIf(), DiagnosticKind.SYNTAX, astElseIf.Token);
         }
 
         public static void ThrowElseIfAfterElseError(AstBuilder builder, AstElseIf astElseIf)
         {
-            builder.Fail(ErrorMessage.ElseIfCannotFollowElseDirectly(), DiagnosticKind.Syntax, astElseIf.Token);
+            builder.Fail(ErrorMessage.ElseIfCannotFollowElseDirectly(), DiagnosticKind.SYNTAX, astElseIf.Token);
         }
     }
 }

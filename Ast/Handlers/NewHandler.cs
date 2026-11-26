@@ -15,7 +15,7 @@ namespace BifyLang.Ast.Handlers
             AstNode nextNode = new BinaryOperatorHandler(Builder).ParsePrimary();
             if (nextNode is not AstCall)
             {
-                Builder.Fail("A new expression requires an argument list.", DiagnosticKind.Syntax, nextNode?.Token ?? token);
+                Builder.Fail("A new expression requires an argument list.", DiagnosticKind.SYNTAX, nextNode?.Token ?? token);
             }
             AstCall astCall = (AstCall)nextNode;
             AstNew astNew = new AstNew(token, astCall.CallableName, astCall.Arguments);

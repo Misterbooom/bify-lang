@@ -22,7 +22,7 @@ namespace BifyLang.Ast.Handlers
             AstNode incrementNode = Builder.ParseTokens(splittedTokens.ElementAtOrDefault(2));
             if (Builder.GetNextToken()?.Type != TokenType.LCUR)
             {
-                Builder.Fail("For body not found!", DiagnosticKind.Syntax, Builder.PeekTokenOrNull() ?? token);
+                Builder.Fail("For body not found!", DiagnosticKind.SYNTAX, Builder.PeekTokenOrNull() ?? token);
             }
             var blockNode = Builder.HandleBody("For");
             AstFor astFor = new AstFor(token, blockNode, conditionNode, incrementNode, initNode);

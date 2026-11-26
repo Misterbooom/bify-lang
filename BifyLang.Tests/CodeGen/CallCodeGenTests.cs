@@ -46,12 +46,12 @@ public class CallCodeGenTests : BifyTestBase
     [Test]
     public void Call_ArgCountMismatchThrows()
     {
-        AssertCompileError("func foo(a: int, b: int) {} func test() { foo(1); }", DiagnosticKind.Type);
+        AssertCompileError("func foo(a: int, b: int) {} func test() { foo(1); }", DiagnosticKind.TYPE);
     }
 
     [Test]
     public void Call_UndefinedFunctionThrows()
     {
-        AssertCompileError("func test() { undefinedFunc(); }", DiagnosticKind.Name);
+        AssertCompileError("func test() { undefinedFunc(); }", DiagnosticKind.NAME);
     }
 }

@@ -41,7 +41,7 @@ public class FunctionPathCheckerTests : BifyTestBase
     private static void AssertTypeError(string code, string? expectedSubstring = null)
     {
         using var ctx = new CodeGenContext();
-        BifyAssert.ActionThrows(DiagnosticKind.Type, () => ParseAndCheck(code, ctx), expectedSubstring, ctx.Diagnostics);
+        BifyAssert.ActionThrows(DiagnosticKind.TYPE, () => ParseAndCheck(code, ctx), expectedSubstring, ctx.Diagnostics);
     }
 
     [Test]
@@ -141,7 +141,7 @@ public class FunctionPathCheckerTests : BifyTestBase
             }
         }
         func main() -> int { return 0; }
-        """, DiagnosticKind.Type, "Not all execution paths return a value for int");
+        """, DiagnosticKind.TYPE, "Not all execution paths return a value for int");
     }
 
     [TestCase("func missing() -> int { val a: int = 5; }", "Not all execution paths return a value for int", TestName = "PathCheck_MissingReturnNonVoid")]

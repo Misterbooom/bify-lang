@@ -23,7 +23,7 @@ public class CallGen(CodeGenContext ctx) : CodeGenBase(ctx)
 
         var target = new ExpressionDispatcher(_ctx).EmitExpression(astCall.CallableName);
         if (target.Type is not CallableType callableType)
-            return Fail<TypedValue>("Can't call  " + astCall.CallableName.Token.Value, DiagnosticKind.Type, astCall);
+            return Fail<TypedValue>("Can't call  " + astCall.CallableName.Token.Value, DiagnosticKind.TYPE, astCall);
 
         var args = ResolveArgs(astCall, callableType);
 
@@ -37,12 +37,12 @@ public class CallGen(CodeGenContext ctx) : CodeGenBase(ctx)
             throw new Exception("Target node is not member access");
 
         if (memberAccess.Right is not AstIdentifier id)
-            return Fail<TypedValue>("Invalid member identifier.", DiagnosticKind.Attribute, astCall);
+            return Fail<TypedValue>("Invalid member identifier.", DiagnosticKind.ATTRIBUTE, astCall);
 
         var (thisPtr, compositeType) = ResolveReceiver(memberAccess.Left, astCall);
 
         if (!compositeType.Methods.TryGetValue(id.Name, out var method))
-            return Fail<TypedValue>($"Method '{id.Name}' does not exist", DiagnosticKind.Attribute, astCall);
+            return Fail<TypedValue>($"Method '{id.Name}' does not exist", DiagnosticKind.ATTRIBUTE, astCall);
 
         if (method.IsPoison)
             return AbortPoison<TypedValue>();
@@ -69,7 +69,7 @@ public class CallGen(CodeGenContext ctx) : CodeGenBase(ctx)
                 return (upgraded.Value, classType);
             }
             return Fail<(LLVMValueRef, ICompositeType)>(
-                $"Cannot call member on non-composite type '{lvalue.Type.Name}'", DiagnosticKind.Type, astCall);
+                $"Cannot call member on non-composite type '{lvalue.Type.Name}'", DiagnosticKind.TYPE, astCall);
         }
         var left = new ExpressionDispatcher(_ctx).EmitExpression(leftNode);
         if (left.Type is StructType rvalueStruct)
@@ -84,7 +84,7 @@ public class CallGen(CodeGenContext ctx) : CodeGenBase(ctx)
             return (upgraded.Value, rvalueClass);
         }
         return Fail<(LLVMValueRef, ICompositeType)>(
-            $"Cannot call member on non-composite type '{left.Type.Name}'", DiagnosticKind.Type, astCall);
+            $"Cannot call member on non-composite type '{left.Type.Name}'", DiagnosticKind.TYPE, astCall);
     }
     private LLVMValueRef ResolveMethodCallee(ICompositeType compositeType, LLVMValueRef thisReference, ClassMethod method)
     {

@@ -1,6 +1,7 @@
 
-public struct Hey{
-    constructor(){
+public class Hey{
     
-    }
+}
+protected func main()->int {
+    return 0;
 }

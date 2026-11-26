@@ -10,7 +10,7 @@ namespace BifyLang.Ast.Handlers
         private readonly  DeclarationHeader _header = header;
         public override void HandleToken(Token token)
         {
-            bool isStruct = _header.Kind ==  DeclarationKind.Struct;
+            bool isStruct = _header.Kind ==  DeclarationKind.STRUCT;
             string kindLower = isStruct ? "struct" : "class";
             string kindTitle = isStruct ? "Struct" : "Class";
 
@@ -37,7 +37,7 @@ namespace BifyLang.Ast.Handlers
                     {
                         Builder.Error(
                             $"{kindTitle} attributes must be defined before methods in the {kindLower} body.",
-                            DiagnosticKind.Syntax,
+                            DiagnosticKind.SYNTAX,
                             child.Token
                         );
                     }
@@ -51,7 +51,7 @@ namespace BifyLang.Ast.Handlers
                     Builder.Error(
                         $"Invalid statement in {kindLower} body. Only methods and variables are allowed. " +
                         $"Not a {child.GetType().Name.Replace("Ast", "").ToLower()}.",
-                        DiagnosticKind.Syntax,
+                        DiagnosticKind.SYNTAX,
                         child.Token
                     );
                 }

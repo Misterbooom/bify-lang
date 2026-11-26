@@ -84,7 +84,7 @@ namespace BifyLang.Ast.Handlers
                         {
                             Builder.Error(
                                 $"Parameter #{paramIndex + 1}: Invalid parameter declaration.",
-                                DiagnosticKind.Syntax,
+                                DiagnosticKind.SYNTAX,
                                 group.Count > 0 ? group[0] : null
                             );
                         }
@@ -107,7 +107,7 @@ namespace BifyLang.Ast.Handlers
                     {
                         Builder.Error(
                             $"Parameter #{paramIndex + 1}: Invalid parameter declaration.",
-                            DiagnosticKind.Syntax,
+                            DiagnosticKind.SYNTAX,
                             group.Count > 0 ? group[0] : null
                         );
                     }

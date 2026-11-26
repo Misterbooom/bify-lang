@@ -1,4 +1,5 @@
 #nullable enable
+using System;
 using System.Linq;
 using BifyLang.Ast;
 using BifyLang.CodeGen.Core;
@@ -16,7 +17,7 @@ public class FunctionGen(CodeGenContext ctx) : CodeGenBase(ctx)
 {
     private readonly FunctionBodyEmitter _bodyEmitter = new(ctx);
 
-    public LLVMValueRef DeclareFunction(AstFunctionDecl functionDecl)
+    public LLVMValueRef DeclareFunction(AstFunctionDecl functionDecl, TypeFlags  flags)
     {
         string functionName = functionDecl.FunctionNameNode.Name;
         var mangledName = NameMangler.GenerateFunctionName(_ctx.ModuleContext.Name, functionName);
@@ -31,16 +32,16 @@ public class FunctionGen(CodeGenContext ctx) : CodeGenBase(ctx)
         var parameters = ParameterResolver.Resolve(functionDecl.ArgumentsNode, _ctx);
         var paramTypes = parameters.Select(p => p.Type.Type).ToArray();
 
-        
+
         var functionType = LLVMTypeRef.CreateFunction(returnType.Type, paramTypes, false);
         var functionValue = _ctx.Module.AddFunction(mangledName, functionType);
 
-        _ctx.CurrentScope.Define(functionName, functionValue, new CallableType(functionName, mangledName, [..parameters], returnType, functionType));
+        _ctx.CurrentScope.Define(functionName, functionValue, new CallableType(functionName, mangledName, [..parameters], returnType, functionType), typeFlags:flags);
 
         return functionValue;
     }
 
- 
+
     public void EmitFunctionBody(AstFunctionDecl functionDecl)
     {
         string functionName = functionDecl.FunctionNameNode.Name;
@@ -56,7 +57,7 @@ public class FunctionGen(CodeGenContext ctx) : CodeGenBase(ctx)
 
         var functionValue = _ctx.Module.GetNamedFunction(mangledName);
         if (functionValue.Handle == 0)
-            functionValue = DeclareFunction(functionDecl);
+            throw new InvalidOperationException("Can't find function in module.");
 
         _bodyEmitter.Emit(functionValue, returnType, parameters, functionDecl.BlockNode);
     }
@@ -66,7 +67,6 @@ public class FunctionGen(CodeGenContext ctx) : CodeGenBase(ctx)
         if (functionDecl.IsPoison)
             return;
 
-        DeclareFunction(functionDecl);
         EmitFunctionBody(functionDecl);
     }
 }

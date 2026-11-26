@@ -44,7 +44,7 @@ public class LValueResolver(CodeGenContext ctx) : CodeGenBase(ctx)
             return lvalue;
         }
 
-        return Fail<LValue>($"Cannot assign to '{node.Token.Value}'.", DiagnosticKind.Type, node);
+        return Fail<LValue>($"Cannot assign to '{node.Token.Value}'.", DiagnosticKind.TYPE, node);
     }
 
     private bool TryResolveIdentifier(AstIdentifier id, out LValue lvalue)
@@ -85,10 +85,10 @@ public class LValueResolver(CodeGenContext ctx) : CodeGenBase(ctx)
             _ctx.ModulesMap.ContainsKey(name) ||
             _ctx.CurrentScope.TryLookup(name, out _))
         {
-            return Fail<LValue>($"Cannot assign to '{name}'.", DiagnosticKind.Type, id);
+            return Fail<LValue>($"Cannot assign to '{name}'.", DiagnosticKind.TYPE, id);
         }
 
-        return Fail<LValue>($"Variable '{name}' is not defined", DiagnosticKind.Name, id);
+        return Fail<LValue>($"Variable '{name}' is not defined", DiagnosticKind.NAME, id);
     }
 
     private bool TryResolveMemberAccess(AstMemberAccess memberAccess, bool strict, out LValue lvalue)
@@ -97,7 +97,7 @@ public class LValueResolver(CodeGenContext ctx) : CodeGenBase(ctx)
         if (memberAccess.Left is AstIdentifier modId && _ctx.ModulesMap.ContainsKey(modId.Name))
         {
             if (strict)
-                Fail($"Cannot assign to module member '{memberAccess.Right.Token.Value}'.", DiagnosticKind.Type,
+                Fail($"Cannot assign to module member '{memberAccess.Right.Token.Value}'.", DiagnosticKind.TYPE,
                     memberAccess);
             return false;
         }
@@ -105,7 +105,7 @@ public class LValueResolver(CodeGenContext ctx) : CodeGenBase(ctx)
         if (memberAccess.Right is not AstIdentifier memberId)
         {
             if (strict)
-                Fail("Expected member identifier.", DiagnosticKind.Syntax, memberAccess);
+                Fail("Expected member identifier.", DiagnosticKind.SYNTAX, memberAccess);
             return false;
         }
 
@@ -127,7 +127,7 @@ public class LValueResolver(CodeGenContext ctx) : CodeGenBase(ctx)
         if (leftLValue.Type is not ICompositeType compositeType)
         {
             if (strict)
-                Fail($"Cannot access member on non-composite type '{leftLValue.Type.Name}'.", DiagnosticKind.Type,
+                Fail($"Cannot access member on non-composite type '{leftLValue.Type.Name}'.", DiagnosticKind.TYPE,
                     memberAccess);
             return false;
         }
@@ -147,9 +147,9 @@ public class LValueResolver(CodeGenContext ctx) : CodeGenBase(ctx)
         lvalue = default;
         var leftVal = new ExpressionDispatcher(_ctx).EmitExpression(memberAccess.Left);
         if (leftVal.Type is StructType)
-            Fail("Cannot assign to a member of a temporary struct value.", DiagnosticKind.Type, memberAccess);
+            Fail("Cannot assign to a member of a temporary struct value.", DiagnosticKind.TYPE, memberAccess);
         if (leftVal.Type is not ClassType classType)
-            return Fail<bool>($"Cannot access member on non-composite type '{leftVal.Type.Name}'.", DiagnosticKind.Type,
+            return Fail<bool>($"Cannot access member on non-composite type '{leftVal.Type.Name}'.", DiagnosticKind.TYPE,
                 memberAccess);
         TryLookupField(memberAccess, classType, memberName, strict: true, out var field);
         var basePtr = leftVal.Value;
@@ -180,8 +180,8 @@ public class LValueResolver(CodeGenContext ctx) : CodeGenBase(ctx)
         if (strict)
         {
             if (compositeType.Methods.ContainsKey(memberName))
-                Fail($"Cannot assign to method '{memberName}'.", DiagnosticKind.Type, memberAccess);
-            Fail($"Type '{compositeType.Name}' has no member '{memberName}'.", DiagnosticKind.Attribute, memberAccess);
+                Fail($"Cannot assign to method '{memberName}'.", DiagnosticKind.TYPE, memberAccess);
+            Fail($"Type '{compositeType.Name}' has no member '{memberName}'.", DiagnosticKind.ATTRIBUTE, memberAccess);
         }
 
         return false;

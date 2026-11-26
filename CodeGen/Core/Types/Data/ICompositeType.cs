@@ -7,10 +7,11 @@ namespace BifyLang.CodeGen.Core.Types.Data;
 [Flags]
 public enum TypeFlags
 {
-    None = 0,
-    Public = 1 << 0,
-    Static = 1 << 1,
-    Final = 1 << 2
+    NONE = 0,
+    PUBLIC = 1 << 0,
+    STATIC = 1 << 1,
+    FINAL = 1 << 2,
+    ABSTRACT = 1 << 3,
 }
 public interface ICompositeType
 {

@@ -99,7 +99,7 @@ public class NewAndClassBuilderTests : BifyTestBase
 
     [Test]
     public void New_NonClassType_Throws() =>
-        AssertCompileError("func test() { val x: int = new int(); }", DiagnosticKind.Type);
+        AssertCompileError("func test() { val x: int = new int(); }", DiagnosticKind.TYPE);
 
     [Test]
     public void New_ConstructorArgumentMismatch_Throws() =>
@@ -110,7 +110,7 @@ public class NewAndClassBuilderTests : BifyTestBase
         func test() {
             val p: Point = new Point(10);
         }
-        """, DiagnosticKind.Type);
+        """, DiagnosticKind.TYPE);
 
     [Test]
     public void New_ArgumentsPassedToClassWithoutConstructor_Throws() =>
@@ -119,5 +119,5 @@ public class NewAndClassBuilderTests : BifyTestBase
         func test() {
             val e: Empty = new Empty(1, 2);
         }
-        """, DiagnosticKind.Type);
+        """, DiagnosticKind.TYPE);
 }

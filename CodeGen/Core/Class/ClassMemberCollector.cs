@@ -24,23 +24,23 @@ public static class ClassMemberCollector
         if (classType is StructType)
         {
             if (!FlagChecker.CheckStructAttributeFlags(flags, out var error))
-                ctx.Fail(error ?? "Invalid attribute flags.", DiagnosticKind.Attribute, varDecl);
+                ctx.Fail(error ?? "Invalid attribute flags.", DiagnosticKind.ATTRIBUTE, varDecl);
         }
         else if (classType is ClassType)
         {
             if (!FlagChecker.CheckAttributeFlags(flags, out var error))
-                ctx.Fail(error ?? "Invalid attribute flags.", DiagnosticKind.Attribute, varDecl);
+                ctx.Fail(error ?? "Invalid attribute flags.", DiagnosticKind.ATTRIBUTE, varDecl);
         }
 
         if (varDecl.Type is AstIdentifier id && id.Name == "void")
         {
-            ctx.Fail("Fields must have an explicit type.", DiagnosticKind.Type, varDecl);
+            ctx.Fail("Fields must have an explicit type.", DiagnosticKind.TYPE, varDecl);
         }
 
         bool isWeak = varDecl.Flag?.HasFlag("weak") ?? false;
         if (varDecl.AssignmentNode.Right is AstNew && isWeak)
         {
-            ctx.Fail("Can't use weak flag with new statement.", DiagnosticKind.Type, varDecl);
+            ctx.Fail("Can't use weak flag with new statement.", DiagnosticKind.TYPE, varDecl);
         }
 
         var accessLevel = ParseAccessLevel(varDecl.Flag);
@@ -76,12 +76,12 @@ public static class ClassMemberCollector
         if (classType is StructType)
         {
             if (!FlagChecker.CheckStructMethodFlags(flags, out var error))
-                ctx.Fail(error ?? "Invalid method flags.", DiagnosticKind.Attribute, funcDecl);
+                ctx.Fail(error ?? "Invalid method flags.", DiagnosticKind.ATTRIBUTE, funcDecl);
         }
         else if (classType is ClassType)
         {
             if (!FlagChecker.CheckMethodFlags(flags, out var error))
-                ctx.Fail(error ?? "Invalid method flags.", DiagnosticKind.Attribute, funcDecl);
+                ctx.Fail(error ?? "Invalid method flags.", DiagnosticKind.ATTRIBUTE, funcDecl);
         }
 
 
@@ -135,7 +135,7 @@ public static class ClassMemberCollector
         if (name == "constructor")
         {
             if (isVirtual || isOverride)
-                ctx.Fail("Constructor cannot be marked 'virtual' or 'override'.", DiagnosticKind.Type, funcDecl);
+                ctx.Fail("Constructor cannot be marked 'virtual' or 'override'.", DiagnosticKind.TYPE, funcDecl);
 
             return BifyType.CreateVoid(ctx);
         }
@@ -143,7 +143,7 @@ public static class ClassMemberCollector
         if (name == "destructor")
         {
             if (parameters.Count > 0)
-                ctx.Fail("Destructor cannot have parameters.", DiagnosticKind.Syntax, funcDecl);
+                ctx.Fail("Destructor cannot have parameters.", DiagnosticKind.SYNTAX, funcDecl);
 
             isVirtual = true;
             return BifyType.CreateVoid(ctx);

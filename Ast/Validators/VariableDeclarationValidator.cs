@@ -14,7 +14,7 @@ namespace BifyLang.Ast.Validators
             {
                 builder.Fail(
                     ErrorMessage.InvalidVariableName(identifierNode?.Token.Value),
-                    DiagnosticKind.Name,
+                    DiagnosticKind.NAME,
                     identifierNode?.Token ?? assignmentToken
                 );
             }
@@ -27,7 +27,7 @@ namespace BifyLang.Ast.Validators
 
             builder.Fail(
                 ErrorMessage.InvalidVariableType(typeNode?.Token.Value),
-                DiagnosticKind.Type,
+                DiagnosticKind.TYPE,
                 typeNode?.Token ?? assignmentToken
             );
         }
@@ -39,7 +39,7 @@ namespace BifyLang.Ast.Validators
         {
             if (valueTokens.Count == 0)
             {
-                builder.Fail(ErrorMessage.EmptyValueAssigned(), DiagnosticKind.Syntax, assignmentToken);
+                builder.Fail(ErrorMessage.EmptyValueAssigned(), DiagnosticKind.SYNTAX, assignmentToken);
             }
             if (variableToken != null && (variableToken.Type == TokenType.IDENTIFIER || variableToken.Type == TokenType.INDEX_OPERATOR))
             {
@@ -47,11 +47,11 @@ namespace BifyLang.Ast.Validators
                 {
                     return true;
                 }
-                builder.Fail(ErrorMessage.MissingAssignmentOperator(), DiagnosticKind.Syntax, variableToken);
+                builder.Fail(ErrorMessage.MissingAssignmentOperator(), DiagnosticKind.SYNTAX, variableToken);
             }
             else
             {
-                builder.Fail(ErrorMessage.InvalidVariableName(variableToken?.Value), DiagnosticKind.Syntax, assignmentToken);
+                builder.Fail(ErrorMessage.InvalidVariableName(variableToken?.Value), DiagnosticKind.SYNTAX, assignmentToken);
             }
 
             return false;

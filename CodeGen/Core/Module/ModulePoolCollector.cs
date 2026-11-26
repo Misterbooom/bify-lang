@@ -41,7 +41,7 @@ public class ModulePoolCollector(CodeGenContext ctx) : CodeGenBase(ctx)
             if (child is AstImport importNode)
             {
                 if (seenNonImport)
-                    Fail("Module import must always be on top.", DiagnosticKind.Import, importNode);
+                    Fail("Module import must always be on top.", DiagnosticKind.IMPORT, importNode);
 
                 string basePath = Path.GetDirectoryName(currentFilePath) ?? "";
                 string fullPath = string.IsNullOrEmpty(basePath)
@@ -52,7 +52,7 @@ public class ModulePoolCollector(CodeGenContext ctx) : CodeGenBase(ctx)
                     continue;
 
                 if (!File.Exists(fullPath))
-                    Fail($"Module file not found: '{fullPath}'.", DiagnosticKind.Import, importNode);
+                    Fail($"Module file not found: '{fullPath}'.", DiagnosticKind.IMPORT, importNode);
 
                 AstModule importedAst = CompilationHelper.ParseToAst(fullPath, _ctx.Diagnostics);
 

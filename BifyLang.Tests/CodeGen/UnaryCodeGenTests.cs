@@ -24,18 +24,18 @@ public class UnaryCodeGenTests : BifyTestBase
     [Test]
     public void Unary_MutateConstThrows()
     {
-        AssertCompileError("func test() { val c: int = 5; c++; }", DiagnosticKind.Type);
+        AssertCompileError("func test() { val c: int = 5; c++; }", DiagnosticKind.TYPE);
     }
 
     [Test]
     public void Unary_MutateUndefinedThrows()
     {
-        AssertCompileError("func test() { missingVar++; }", DiagnosticKind.Name);
+        AssertCompileError("func test() { missingVar++; }", DiagnosticKind.NAME);
     }
 
     [Test]
     public void Unary_InvalidStatementThrows()
     {
-        AssertCompileError("func test() { -5; }", DiagnosticKind.Syntax);
+        AssertCompileError("func test() { -5; }", DiagnosticKind.SYNTAX);
     }
 }

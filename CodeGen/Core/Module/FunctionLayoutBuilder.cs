@@ -1,4 +1,5 @@
 using BifyLang.Ast;
+using BifyLang.CodeGen.Core.Class;
 using BifyLang.CodeGen.Core.Context;
 using BifyLang.CodeGen.Core.Types.Data;
 using BifyLang.CodeGen.Declarations;
@@ -32,6 +33,7 @@ public class FunctionLayoutBuilder(CodeGenContext ctx) : LayoutBuilder(ctx)
             if (moduleChildNode is AstFunctionDecl functionChildNode)
             {
                 _ctx.CurrentLine = functionChildNode.LineNumber;
+
                 if (functionChildNode.IsPoison)
                 {
                     _ctx.CurrentScope.DefinePoison(functionChildNode.FunctionNameNode.Name, BifyType.CreateVoid(_ctx));
@@ -39,7 +41,7 @@ public class FunctionLayoutBuilder(CodeGenContext ctx) : LayoutBuilder(ctx)
                 }
                 try
                 {
-                    funcGen.DeclareFunction(functionChildNode);
+                    funcGen.DeclareFunction(functionChildNode, MemberResolver.ResolveFunctionFlags(_ctx, functionChildNode) );
                 }
                 catch (BifyCompilationException)
                 {

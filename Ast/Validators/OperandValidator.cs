@@ -10,7 +10,7 @@ namespace BifyLang.Ast.Validators
             {
                 builder.Fail(
                     ErrorMessage.NotEnoughOperands(operatorNode.Token.Value),
-                    DiagnosticKind.Arithmetic,
+                    DiagnosticKind.ARITHMETIC,
                     operatorNode?.Token
                 );
             }
@@ -24,7 +24,7 @@ namespace BifyLang.Ast.Validators
             {
                 builder.Fail(
                     ErrorMessage.InvalidOperandType(node.GetType().Name.Replace("Ast", "")),
-                    DiagnosticKind.Arithmetic,
+                    DiagnosticKind.ARITHMETIC,
                     node.Token ?? operatorNode?.Token
                 );
             }

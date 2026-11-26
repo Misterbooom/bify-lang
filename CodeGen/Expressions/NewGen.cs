@@ -25,7 +25,7 @@ public class NewGen(CodeGenContext ctx) : CodeGenBase(ctx)
         {
             ClassType classType => EmitClassNew(classType, astNew.Arguments, astNew.ValueNode),
             StructType structType => EmitStructNew(structType, astNew.Arguments, astNew.ValueNode),
-            _ => Fail<TypedValue>($"Type '{type.Name}' cannot be instantiated.", DiagnosticKind.Type,
+            _ => Fail<TypedValue>($"Type '{type.Name}' cannot be instantiated.", DiagnosticKind.TYPE,
                 astNew.ValueNode)
         };
 
@@ -55,7 +55,7 @@ public class NewGen(CodeGenContext ctx) : CodeGenBase(ctx)
             $"Constructor '{type.Name}'");
         if (resolvedArgs.Any(i => i != null && i.isPositional ))
         {
-            Fail("Struct initialization requires named arguments.",DiagnosticKind.Syntax, callSite);
+            Fail("Struct initialization requires named arguments.",DiagnosticKind.SYNTAX, callSite);
         }
         var pairs = type.Fields.GroupJoin(
             resolvedArgs,
@@ -97,10 +97,10 @@ public class NewGen(CodeGenContext ctx) : CodeGenBase(ctx)
         };
 
         if (rawName == null)
-            return Fail<ICompositeType>("Expected type identifier after 'new'", DiagnosticKind.Syntax, valueNode);
+            return Fail<ICompositeType>("Expected type identifier after 'new'", DiagnosticKind.SYNTAX, valueNode);
 
         if (TypeResolver.Resolve(valueNode, _ctx) is not ICompositeType type)
-            return Fail<ICompositeType>($"Type '{rawName}' cannot be instantiated.", DiagnosticKind.Type, valueNode);
+            return Fail<ICompositeType>($"Type '{rawName}' cannot be instantiated.", DiagnosticKind.TYPE, valueNode);
 
         return type;
     }
@@ -131,7 +131,7 @@ public class NewGen(CodeGenContext ctx) : CodeGenBase(ctx)
         string symbol = ctor.Signature is CallableType c ? c.FullName : $"{ctor.DeclaringType.FullName}_constructor";
         var func = _ctx.Module.GetNamedFunction(symbol);
         if (func.Handle == IntPtr.Zero)
-            Fail($"Constructor '{symbol}' is not defined", DiagnosticKind.Name);
+            Fail($"Constructor '{symbol}' is not defined", DiagnosticKind.NAME);
 
         return func;
     }

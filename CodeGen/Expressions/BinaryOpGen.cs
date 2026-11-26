@@ -33,7 +33,7 @@ public class BinaryOpGen
         using (ctx.HeapControl.BeginTempScope())
             left = dispatcher.EmitExpression(binaryOp.Left);
         if (left.Type.Name != "bool")
-            return ctx.Fail<TypedValue>($"Operator '{op}' is not supported for '{left.Type.Name}'", DiagnosticKind.Type, binaryOp);
+            return ctx.Fail<TypedValue>($"Operator '{op}' is not supported for '{left.Type.Name}'", DiagnosticKind.TYPE, binaryOp);
 
         var isAnd = op == TokenType.AND;
         var function = ctx.FunctionEntry.Parent;
@@ -51,7 +51,7 @@ public class BinaryOpGen
         using (ctx.HeapControl.BeginTempScope())
             right = dispatcher.EmitExpression(binaryOp.Right);
         if (right.Type.Name != "bool")
-            return ctx.Fail<TypedValue>($"Operator '{op}' is not supported between 'bool' and '{right.Type.Name}'", DiagnosticKind.Type, binaryOp);
+            return ctx.Fail<TypedValue>($"Operator '{op}' is not supported between 'bool' and '{right.Type.Name}'", DiagnosticKind.TYPE, binaryOp);
 
         var rightExitBlock = ctx.Builder.InsertBlock;
         if (rightExitBlock.Terminator.Handle == IntPtr.Zero)
@@ -91,7 +91,7 @@ public class BinaryOpGen
             right.Type.Type.Kind == LLVMTypeKind.LLVMPointerTypeKind)
             return EmitPointerComparison(ctx, op, left.Value, right.Value);
 
-        return ctx.Fail<TypedValue>($"Operator '{op}' is not supported between '{left.Type.Name}' and '{right.Type.Name}'", DiagnosticKind.Type);
+        return ctx.Fail<TypedValue>($"Operator '{op}' is not supported between '{left.Type.Name}' and '{right.Type.Name}'", DiagnosticKind.TYPE);
     }
 
     private static TypedValue EmitIntBinary(CodeGenContext ctx, TokenType op, LLVMValueRef left, LLVMValueRef right)
@@ -126,7 +126,7 @@ public class BinaryOpGen
             TokenType.BIT_XOR or TokenType.BITXOR => new TypedValue(ctx.Builder.BuildXor(left, right, "xortmp"),
                 intType),
 
-            _ => ctx.Fail<TypedValue>($"Unsupported binary operator: {op}", DiagnosticKind.Syntax)
+            _ => ctx.Fail<TypedValue>($"Unsupported binary operator: {op}", DiagnosticKind.SYNTAX)
         };
     }
 
@@ -156,7 +156,7 @@ public class BinaryOpGen
             TokenType.GTE or TokenType.GTEQ => new TypedValue(
                 ctx.Builder.BuildFCmp(LLVMRealPredicate.LLVMRealOGE, left, right, "fgtetmp"), boolType),
 
-            _ => ctx.Fail<TypedValue>($"Unsupported float binary operator: {op}", DiagnosticKind.Syntax)
+            _ => ctx.Fail<TypedValue>($"Unsupported float binary operator: {op}", DiagnosticKind.SYNTAX)
         };
     }
 
@@ -173,7 +173,7 @@ public class BinaryOpGen
             TokenType.NEQ => new TypedValue(ctx.Builder.BuildICmp(LLVMIntPredicate.LLVMIntNE, left, right, "neqtmp"),
                 boolType),
 
-            _ => ctx.Fail<TypedValue>($"Unsupported boolean binary operator: {op}", DiagnosticKind.Syntax)
+            _ => ctx.Fail<TypedValue>($"Unsupported boolean binary operator: {op}", DiagnosticKind.SYNTAX)
         };
     }
 
@@ -188,7 +188,7 @@ public class BinaryOpGen
                 ctx.Builder.BuildICmp(LLVMIntPredicate.LLVMIntEQ, left, right, "ptreq"), boolType),
             TokenType.NEQ => new TypedValue(ctx.Builder.BuildICmp(LLVMIntPredicate.LLVMIntNE, left, right, "ptrneq"),
                 boolType),
-            _ => ctx.Fail<TypedValue>($"Unsupported pointer comparison operator: {op}", DiagnosticKind.Syntax)
+            _ => ctx.Fail<TypedValue>($"Unsupported pointer comparison operator: {op}", DiagnosticKind.SYNTAX)
         };
     }
 }

@@ -11,8 +11,8 @@ public class ClassDependencyResolver(CodeGenContext ctx) : CodeGenBase(ctx)
 {
     private enum VisitState
     {
-        Visiting,
-        Visited
+        VISITING,
+        VISITED
     }
 
     private readonly Dictionary<string, ClassInfo> _classes = [];
@@ -91,7 +91,7 @@ public class ClassDependencyResolver(CodeGenContext ctx) : CodeGenBase(ctx)
 
             if (_classes.ContainsKey(mangledName))
             {
-                Error($"Class '{rawClassName}' already exists in module '{module.Name}'.", DiagnosticKind.Name,
+                Error($"Class '{rawClassName}' already exists in module '{module.Name}'.", DiagnosticKind.NAME,
                     classNode);
                 continue;
             }
@@ -127,7 +127,7 @@ public class ClassDependencyResolver(CodeGenContext ctx) : CodeGenBase(ctx)
             AstMemberAccess { Left: AstIdentifier moduleId, Right: AstIdentifier classId }
                 => NameMangler.GenerateTypeName(moduleId.Name, classId.Name),
             AstMemberAccess
-                => ctx.Fail<string>("Invalid parent class reference.", DiagnosticKind.Syntax, node),
+                => ctx.Fail<string>("Invalid parent class reference.", DiagnosticKind.SYNTAX, node),
             _ => throw new NotSupportedException($"'{node.GetType().Name}' is not supported as a parent class node.")
         };
     }
@@ -147,7 +147,7 @@ public class ClassDependencyResolver(CodeGenContext ctx) : CodeGenBase(ctx)
                 {
                     Fail(
                         $"Class '{mangledClassName}' inherits from unknown class '{mangledParentName}'.",
-                        DiagnosticKind.Type,
+                        DiagnosticKind.TYPE,
                         info.ClassNode
                     );
                 }
@@ -159,7 +159,7 @@ public class ClassDependencyResolver(CodeGenContext ctx) : CodeGenBase(ctx)
     {
         if (_states.TryGetValue(mangledClassName, out var state))
         {
-            if (state == VisitState.Visiting)
+            if (state == VisitState.VISITING)
             {
                 var info = _classes[mangledClassName];
                 string path = _modulePaths.GetValueOrDefault(info.ModuleName, "");
@@ -167,17 +167,17 @@ public class ClassDependencyResolver(CodeGenContext ctx) : CodeGenBase(ctx)
                 {
                     Fail(
                         $"Circular inheritance detected at class '{mangledClassName}'.",
-                        DiagnosticKind.CircularInheritance,
+                        DiagnosticKind.CIRCULAR_INHERITANCE,
                         info.ClassNode
                     );
                 }
             }
 
-            if (state == VisitState.Visited)
+            if (state == VisitState.VISITED)
                 return;
         }
 
-        _states[mangledClassName] = VisitState.Visiting;
+        _states[mangledClassName] = VisitState.VISITING;
 
         string mangledParentName = _inheritanceMap[mangledClassName];
         if (!string.IsNullOrEmpty(mangledParentName))
@@ -185,7 +185,7 @@ public class ClassDependencyResolver(CodeGenContext ctx) : CodeGenBase(ctx)
             Visit(mangledParentName);
         }
 
-        _states[mangledClassName] = VisitState.Visited;
+        _states[mangledClassName] = VisitState.VISITED;
         _compilationOrder.Add(_classes[mangledClassName]);
     }
 

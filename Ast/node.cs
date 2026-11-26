@@ -225,7 +225,7 @@ public class AstFunctionDecl(Token token, AstNode typeNode, AstIdentifier functi
     public readonly AstFlag FlagNode = flagNode;
 
     protected override IEnumerable<(string, AstNode)> GetChildren() =>
-        [("Type: ", TypeNode), ("Name: ", FunctionNameNode), ("Arguments: ", ArgumentsNode), ("Block: ", BlockNode)];
+        [("Type: ", TypeNode), ("Name: ", FunctionNameNode), ("Arguments: ", ArgumentsNode), ("Block: ", BlockNode), ("Flags", FlagNode)];
 }
 
 public class AstModule : AstNode
@@ -270,7 +270,7 @@ public class AstModule : AstNode
         string filePath = string.IsNullOrEmpty(ModulePath) ? "main" : ModulePath;
         throw new BifyCompilationException(new Diagnostic(
             $"Invalid module identifier '{name}'. Module name must be a valid identifier.",
-            DiagnosticKind.Name,
+            DiagnosticKind.NAME,
             new SourceLocation(filePath, LineNumber, ColumnNumber)
         ));
     }
@@ -352,6 +352,8 @@ public abstract class AstTypeDecl(Token token, AstNode nameNode, AstNode bodyNod
 
     protected override IEnumerable<(string, AstNode)> GetChildren() =>
         [("Name: ", NameNode), ("Body: ", BodyNode), ("Parent: ", ParentNode), ("Flags: ",  FlagNode)];
+
+
 }
 
 public class AstClass(Token token, AstNode nameNode, AstNode bodyNode, AstNode parentNode, AstFlag flagNode) : AstTypeDecl(token, nameNode, bodyNode, parentNode,flagNode);
@@ -390,4 +392,8 @@ public class AstFlag(Token token, List<AstNode> flags) : AstNode(token)
 
     protected override IEnumerable<(string, AstNode)> GetChildren() =>
         Flags.Select(f => ("Flag: ", f));
+    public string[] ToStringArray()
+    {
+        return [.. Flags.Select(i => i.Token.Value)];
+    }
 }

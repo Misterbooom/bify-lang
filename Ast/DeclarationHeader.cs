@@ -5,10 +5,10 @@ namespace BifyLang.Ast;
 
 internal enum DeclarationKind
 {
-    Variable,
-    Function,
-    Class,
-    Struct
+    VARIABLE,
+    FUNCTION,
+    CLASS,
+    STRUCT
 }
 
 

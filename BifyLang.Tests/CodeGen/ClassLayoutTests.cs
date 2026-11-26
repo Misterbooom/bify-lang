@@ -109,25 +109,25 @@ public class ClassLayoutTests : BifyTestBase
 
     [Test]
     public void ClassLayout_OverrideWithoutBaseMethod_Throws() =>
-        AssertCompileError("class Foo { public override func bar() {} } func main() {}", DiagnosticKind.Type);
+        AssertCompileError("class Foo { public override func bar() {} } func main() {}", DiagnosticKind.TYPE);
 
     [Test]
     public void ClassLayout_VirtualMethodAlreadyExists_Throws() =>
-        AssertCompileError("class A { public virtual func bar() {} } class B : A { public virtual func bar() {} } func main() {}", DiagnosticKind.Type);
+        AssertCompileError("class A { public virtual func bar() {} } class B : A { public virtual func bar() {} } func main() {}", DiagnosticKind.TYPE);
 
     [Test]
     public void ClassLayout_HidingVirtualWithoutOverride_Throws() =>
-        AssertCompileError("class A { public virtual func bar() {} } class B : A { public func bar() {} } func main() {}", DiagnosticKind.Type);
+        AssertCompileError("class A { public virtual func bar() {} } class B : A { public func bar() {} } func main() {}", DiagnosticKind.TYPE);
 
     [Test]
     public void ClassLayout_OverrideSignatureMismatch_Throws() =>
-        AssertCompileError("class A { public virtual func bar(x: int) -> int { return x; } } class B : A { public override func bar(x: int) -> float { return 0.0; } } func main() {}", DiagnosticKind.Type);
+        AssertCompileError("class A { public virtual func bar(x: int) -> int { return x; } } class B : A { public override func bar(x: int) -> float { return 0.0; } } func main() {}", DiagnosticKind.TYPE);
 
     [Test]
     public void ClassLayout_DuplicateField_Throws() =>
-        AssertCompileError("class A { public val x: int; } class B : A { public val x: int; } func main() {}", DiagnosticKind.Name);
+        AssertCompileError("class A { public val x: int; } class B : A { public val x: int; } func main() {}", DiagnosticKind.NAME);
 
     [Test]
     public void ClassLayout_ConstructorCannotBeVirtual_Throws() =>
-        AssertCompileError("class A { public virtual constructor() {} } func main() {}", DiagnosticKind.Type);
+        AssertCompileError("class A { public virtual constructor() {} } func main() {}", DiagnosticKind.TYPE);
 }
