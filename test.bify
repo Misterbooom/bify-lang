@@ -1,8 +1,9 @@
 import "testModule.bify";
 class H{
+
 }
+
 func main()->int {
-    val a = new testModule.Hey();
-    val b = new H();
+    testModule.privFunc();
     return 0;
 }

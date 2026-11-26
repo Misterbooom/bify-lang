@@ -34,6 +34,10 @@ public class FunctionGen(CodeGenContext ctx) : CodeGenBase(ctx)
             _ctx.Error(error, DiagnosticKind.SYNTAX, functionDecl.FlagNode);
         }
 
+        if (functionDecl.BlockNode == null)
+        {
+            _ctx.Error("Functions must have body.", DiagnosticKind.SYNTAX, functionDecl.FunctionNameNode);
+        }
         var returnType = TypeResolver.Resolve(functionDecl.TypeNode, _ctx);
         var parameters = ParameterResolver.Resolve(functionDecl.ArgumentsNode, _ctx);
         var paramTypes = parameters.Select(p => p.Type.Type).ToArray();

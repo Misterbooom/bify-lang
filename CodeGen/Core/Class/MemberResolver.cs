@@ -63,21 +63,13 @@ public static class MemberResolver
 
     public static TypeFlags ResolveTypeFlags(CodeGenContext ctx, AstTypeDecl typeDecl)
     {
-        AstFlag flagNode = typeDecl.FlagNode;
-        TypeFlags flags = TypeFlags.NONE;
-        string? error = null;
-        if (typeDecl is AstClass) FlagChecker.CheckClassFlags(typeDecl.FlagNode.ToStringArray(), out error);
-        if (typeDecl is AstStruct) FlagChecker.CheckStructFlags(typeDecl.FlagNode.ToStringArray(), out error);
-
-
-        if (!string.IsNullOrEmpty(error))
+        bool isStruct = typeDecl is AstStruct;
+        if (!FlagChecker.ParseTypeFlags(typeDecl.FlagNode, isStruct, out var flags, out var error) &&
+            !string.IsNullOrEmpty(error))
         {
             ctx.Error(error, DiagnosticKind.ATTRIBUTE, typeDecl.FlagNode);
         }
 
-        if (flagNode.HasFlag("public")) flags |= TypeFlags.PUBLIC;
-        if (flagNode.HasFlag("static")) flags |= TypeFlags.STATIC;
-        if (flagNode.HasFlag("abstract")) flags |= TypeFlags.ABSTRACT;
         return flags;
     }
     public static TypeFlags ResolveFunctionFlags(CodeGenContext ctx, AstFunctionDecl functionDecl)

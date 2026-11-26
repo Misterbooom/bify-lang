@@ -28,7 +28,7 @@ public class ClassGen(CodeGenContext ctx) : CodeGenBase(ctx)
 
             try
             {
-                methodEmitter.EmitMethod(method);
+                methodEmitter.EmitMethod(method, classNode.NameNode);
             }
             catch (BifyCompilationException)
             {

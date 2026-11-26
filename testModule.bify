@@ -1,8 +1,5 @@
-public class Hey{
-    public func leakPrivateMethod():Bar{
-        return new Bar();
+public abstract class Hey{
+    public abstract func leakPrivateMethod(){
     }
 }
-private class Bar{
 
-}

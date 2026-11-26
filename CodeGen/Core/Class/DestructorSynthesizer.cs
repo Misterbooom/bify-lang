@@ -26,8 +26,7 @@ public static class DestructorSynthesizer
             vtableIndex: 0,
             declaringType: classType,
             body: null,
-            isVirtual: true,
-            isOverride: false,
+            flags: MethodFlags.VIRTUAL,
             parameters: []
         );
     }

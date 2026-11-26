@@ -14,7 +14,7 @@ public readonly struct Symbol(
     BifyType type,
     bool isConstant = false,
     bool isWeak = false,
-    bool isPoison = false, bool isPublic = false, AccessLevel accessLevel = AccessLevel.PRIVATE)
+    bool isPoison = false, AccessLevel accessLevel = AccessLevel.PRIVATE)
 {
     public string Name { get; } = name;
     public LLVMValueRef Pointer { get; } = pointer;

@@ -25,8 +25,7 @@ public static class ConstructorSynthesizer
             vtableIndex: 0,
             declaringType: classType,
             body: null,
-            isVirtual: true,
-            isOverride: false,
+            flags: MethodFlags.NONE,
             parameters: []
         );
     }

@@ -20,7 +20,6 @@ public class ClassBuilder(CodeGenContext ctx) : CodeGenBase(ctx)
 
     private unsafe LLVMValueRef BuildClassInstance(ClassType classType)
     {
-        var ptrType = LLVMTypeRef.CreatePointer(_ctx.Context.Int8Type, 0);
         var vtableGlobal = classType.VTableGlobal.Handle != IntPtr.Zero
             ? classType.VTableGlobal
             : classType.VTable.GlobalValue;

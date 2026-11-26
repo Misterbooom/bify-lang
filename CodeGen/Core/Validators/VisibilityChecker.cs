@@ -10,7 +10,7 @@ namespace BifyLang.CodeGen.Core.Validators;
 public static class VisibilityChecker
 {
     private static bool IsPrivateType(BifyType type) =>
-        type is ICompositeType composite && !composite.Flags.HasFlag(TypeFlags.PUBLIC);
+        type is ICompositeType composite && !composite.Flags.HasFlag(TypeFlags.PUBLIC) ;
 
     private static bool IsLeakingPrivateType(
         BifyType type,

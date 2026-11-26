@@ -1,6 +1,7 @@
 #nullable enable
 using System;
 using System.Collections.Generic;
+using BifyLang.Ast;
 using BifyLang.CodeGen.Core.Class;
 using BifyLang.CodeGen.Core.Context;
 using BifyLang.CodeGen.Core.Types.Data;
@@ -15,8 +16,19 @@ public class MethodEmitter(CodeGenContext ctx) : CodeGenBase(ctx)
     private readonly FunctionBodyEmitter _bodyEmitter = new(ctx);
 
 
-    public void EmitMethod(ClassMethod classMethod)
+    public void EmitMethod(ClassMethod classMethod, AstNode fallback)
     {
+        if (classMethod.IsAbstract)
+        {
+            if (classMethod.Body != null)
+            {
+                _ctx.Error("Abstract methods cannot have body.",DiagnosticKind.SYNTAX, fallback);
+            }
+            var entry = classMethod.FunctionValue.AppendBasicBlock("entry");
+            _ctx.Builder.PositionAtEnd(entry);
+            _ctx.Builder.BuildUnreachable();
+            return;
+        }
         var parameters = new List<ParameterInfo>
         {
             new("this", (BifyType)classMethod.DeclaringType, false, null)
@@ -30,6 +42,8 @@ public class MethodEmitter(CodeGenContext ctx) : CodeGenBase(ctx)
         {
             throw new InvalidOperationException("Method value is null.");
         }
+
+
         _bodyEmitter.Emit(
             classMethod.FunctionValue,
             returnType,

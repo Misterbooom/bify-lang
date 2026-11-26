@@ -8,14 +8,17 @@ namespace BifyLang.Ast.Handlers
     internal class FunctionHandler(AstBuilder builder, DeclarationHeader declarationHeader) : TokenHandler(builder)
     {
         private readonly DeclarationHeader _header = declarationHeader;
+
         public override void HandleToken(Token token)
         {
             Builder.TokenIndex = _header.EndIndex;
             bool isPoison = _header.NameNode.IsPoison || _header.TypeNode is AstPoison || _header.TypeNode.IsPoison;
             AstBinaryOp parameters = null;
-            if (Builder.TokenIndex < Builder.Tokens.Count && Builder.Tokens[Builder.TokenIndex].Type == TokenType.LPAREN)
+            if (Builder.TokenIndex < Builder.Tokens.Count &&
+                Builder.Tokens[Builder.TokenIndex].Type == TokenType.LPAREN)
             {
-                List<List<Token>> splitedTokens = TokensFormatter.SplitTokensByType(Builder.GetConditionTokens(), TokenType.COMMA);
+                List<List<Token>> splitedTokens =
+                    TokensFormatter.SplitTokensByType(Builder.GetConditionTokens(), TokenType.COMMA);
                 AstParam[] parametersNodes = BuildParameters(splitedTokens, ref isPoison);
                 parameters = ConnectParameters(parametersNodes);
             }
@@ -25,19 +28,25 @@ namespace BifyLang.Ast.Handlers
             }
 
             Builder.TokenIndex = _header.BodyStartIndex - 1;
+            AstBlock blockNode = null;
+            if (Builder.GetNextToken()?.Type == TokenType.LCUR)
+            {
+                blockNode = Builder.HandleBody("Function");
+            }
 
-            AstBlock blockNode = Builder.HandleBody("Function");
 
             try
             {
-                FunctionDeclarationValidator.Validate(Builder, _header.NameNode.Token, parameters, blockNode, _header.TypeNode);
+                FunctionDeclarationValidator.Validate(Builder, _header.NameNode.Token, parameters, blockNode,
+                    _header.TypeNode);
             }
             catch (BifyCompilationException)
             {
                 isPoison = true;
             }
 
-            AstNode functionNode = new AstFunctionDecl(token, _header.TypeNode, _header.NameNode, parameters, blockNode, _header.FlagNode)
+            AstNode functionNode = new AstFunctionDecl(token, _header.TypeNode, _header.NameNode, parameters, blockNode,
+                _header.FlagNode)
             {
                 IsPoison = isPoison
             };
@@ -62,6 +71,7 @@ namespace BifyLang.Ast.Handlers
                     binaryOp = new AstBinaryOp(commaToken, parametersNodes[i], binaryOp);
                 }
             }
+
             return binaryOp;
         }
 
@@ -88,6 +98,7 @@ namespace BifyLang.Ast.Handlers
                                 group.Count > 0 ? group[0] : null
                             );
                         }
+
                         isPoison = true;
                         paramIndex++;
                         continue;
@@ -98,7 +109,8 @@ namespace BifyLang.Ast.Handlers
                         isPoison = true;
                     }
 
-                    AstParam param = new(parametersNode.Type, parametersNode.AssignmentNode.Left, parametersNode.AssignmentNode.Right, parametersNode.Flag);
+                    AstParam param = new(parametersNode.Type, parametersNode.AssignmentNode.Left,
+                        parametersNode.AssignmentNode.Right, parametersNode.Flag);
                     parameters.Add(param);
                 }
                 catch (BifyCompilationException)
@@ -111,10 +123,13 @@ namespace BifyLang.Ast.Handlers
                             group.Count > 0 ? group[0] : null
                         );
                     }
+
                     isPoison = true;
                 }
+
                 paramIndex++;
             }
+
             return parameters.ToArray();
         }
 

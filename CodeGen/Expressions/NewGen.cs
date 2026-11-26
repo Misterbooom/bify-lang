@@ -34,6 +34,10 @@ public class NewGen(CodeGenContext ctx) : CodeGenBase(ctx)
 
     private TypedValue EmitClassNew(ClassType type, AstNode[] argsNode, AstNode callSite)
     {
+        if (type.Flags.HasFlag(TypeFlags.ABSTRACT))
+        {
+            _ctx.Fail($"Cannot instantiate abstract class '{type.Name}'",DiagnosticKind.CANNOT_INSTANTIATE_ABSTRACT_CLASS, callSite);
+        }
         var instancePtr = new ClassBuilder(_ctx).BuildInstance(type);
         InvokeConstructor(type, instancePtr, argsNode, callSite);
 

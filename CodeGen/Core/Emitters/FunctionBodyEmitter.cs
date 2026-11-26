@@ -47,6 +47,7 @@ public class FunctionBodyEmitter(CodeGenContext ctx) : CodeGenBase(ctx)
                 var loaded = _ctx.Builder.BuildLoad2(thisSym.Type.Type, thisSym.Pointer, "this_loaded");
                 ClassBuilder.InitFields(_ctx, declaringClass, loaded);
             }
+
             if (body is AstBlock block)
             {
                 new StatementDispatcher(_ctx).EmitBlock(block);

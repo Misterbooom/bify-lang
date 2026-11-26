@@ -93,19 +93,24 @@ public class ClassLayoutBuilder(CodeGenContext ctx) : LayoutBuilder(ctx)
         if (classType == null)
             throw new Exception($"Class: '{type.FullName}' was not registred in TypeRegistry.");
 
-        InheritMembers(classType);
+        InheritMembers(classType, info.ClassNode.ParentNode);
         ProcessFields(info, classType);
         ProcessMethods(info, classType);
         FinalizeStructBody(classType);
     }
 
-    private static void InheritMembers(ClassType classType)
+    private void InheritMembers(ClassType classType, AstNode fallbackNode)
     {
+
         var parent = classType.Parent;
         classType.VTable = VTableBuilder.Inherit(parent);
 
         if (parent == null)
             return;
+        if (parent.Flags.HasFlag(TypeFlags.FINAL))
+        {
+            _ctx.Error("Can't inherit from 'final' class.",DiagnosticKind.TYPE, fallbackNode);
+        }
 
         foreach (var kvp in parent.Fields)
             classType.Fields.Add(kvp.Key, kvp.Value);
@@ -173,8 +178,31 @@ public class ClassLayoutBuilder(CodeGenContext ctx) : LayoutBuilder(ctx)
         {
             SynthesizeConstructor(classType);
         }
+
+        AllAbstractsImplemented(classType, info.ClassNode.NameNode);
     }
 
+    private bool AllAbstractsImplemented(ClassType classType, AstNode fallbackNode)
+    {
+        if (classType.Flags.HasFlag(TypeFlags.ABSTRACT))
+            return true;
+
+        ClassType? parent = classType.Parent;
+        if (parent == null)
+        {
+            return true;
+        }
+        foreach (var (parentMethodName, parentMethod) in parent.Methods)
+        {
+            if (!parentMethod.IsAbstract) continue;
+            if (classType.Methods.TryGetValue(parentMethodName, out var method) && !method.IsOverride)
+            {
+                _ctx.Error($"Abstract method '{method.Name}' must be implemented.", DiagnosticKind.ABSTRACT_METHOD_NOT_IMPLEMENTED,fallbackNode);
+            }
+        }
+
+        return false;
+    }
     private void TryAddMethod(AstFunctionDecl funcDecl, ClassType classType, string name)
     {
         try
