@@ -14,7 +14,7 @@ namespace BifyLang.Ast.Validators
 
             if (nameToken?.Type == TokenType.DESTRUCTOR && parametersNode != null)
             {
-                builder.Fail("Destructor cannot have parameters.", DiagnosticKind.SYNTAX, nameToken);
+                builder.Fail("destructor cannot take parameters", DiagnosticKind.SYNTAX, nameToken);
             }
 
             if (typeNode == null || (typeNode is not AstIdentifier && typeNode.Token.Type != TokenType.POINTER && typeNode is not AstIndexOperator))

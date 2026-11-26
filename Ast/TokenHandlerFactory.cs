@@ -18,7 +18,7 @@ internal static class TokenHandlerFactory
             if (TokenConfig.BinaryOperators.ContainsValue(token.Type))
             {
                 return builder.Fail<TokenHandler>(
-                    "Only a assignment, call, increment, decrement and new object expressions can be used as a statement.",
+                    "invalid expression statement",
                     DiagnosticKind.SYNTAX,
                     token
                 );

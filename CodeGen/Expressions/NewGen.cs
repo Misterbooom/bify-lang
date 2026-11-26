@@ -25,7 +25,7 @@ public class NewGen(CodeGenContext ctx) : CodeGenBase(ctx)
         {
             ClassType classType => EmitClassNew(classType, astNew.Arguments, astNew.ValueNode),
             StructType structType => EmitStructNew(structType, astNew.Arguments, astNew.ValueNode),
-            _ => Fail<TypedValue>($"Type '{type.Name}' cannot be instantiated.", DiagnosticKind.TYPE,
+            _ => Fail<TypedValue>($"cannot instantiate '{type.Name}'", DiagnosticKind.TYPE,
                 astNew.ValueNode)
         };
 
@@ -36,7 +36,7 @@ public class NewGen(CodeGenContext ctx) : CodeGenBase(ctx)
     {
         if (type.Flags.HasFlag(TypeFlags.ABSTRACT))
         {
-            _ctx.Fail($"Cannot instantiate abstract class '{type.Name}'",DiagnosticKind.CANNOT_INSTANTIATE_ABSTRACT_CLASS, callSite);
+            _ctx.Fail($"cannot instantiate abstract class '{type.Name}'", DiagnosticKind.CANNOT_INSTANTIATE_ABSTRACT_CLASS, callSite);
         }
         var instancePtr = new ClassBuilder(_ctx).BuildInstance(type);
         InvokeConstructor(type, instancePtr, argsNode, callSite);
@@ -59,7 +59,7 @@ public class NewGen(CodeGenContext ctx) : CodeGenBase(ctx)
             $"Constructor '{type.Name}'");
         if (resolvedArgs.Any(i => i != null && i.isPositional ))
         {
-            Fail("Struct initialization requires named arguments.",DiagnosticKind.SYNTAX, callSite);
+            Fail("struct init requires named arguments", DiagnosticKind.SYNTAX, callSite);
         }
         var pairs = type.Fields.GroupJoin(
             resolvedArgs,
@@ -101,10 +101,10 @@ public class NewGen(CodeGenContext ctx) : CodeGenBase(ctx)
         };
 
         if (rawName == null)
-            return Fail<ICompositeType>("Expected type identifier after 'new'", DiagnosticKind.SYNTAX, valueNode);
+            return Fail<ICompositeType>("expected type after 'new'", DiagnosticKind.SYNTAX, valueNode);
 
         if (TypeResolver.Resolve(valueNode, _ctx) is not ICompositeType type)
-            return Fail<ICompositeType>($"Type '{rawName}' cannot be instantiated.", DiagnosticKind.TYPE, valueNode);
+            return Fail<ICompositeType>($"cannot instantiate '{rawName}'", DiagnosticKind.TYPE, valueNode);
 
         return type;
     }

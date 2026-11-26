@@ -20,13 +20,13 @@ public static class ClassMemberCollector
     {
         string name = varDecl.AssignmentNode.Left.Token.Value;
         if (!FlagChecker.ParseFieldFlags(varDecl.Flag, classType is StructType, out var accessLevel, out var fieldFlags, out var error))
-            ctx.Fail(error ?? "Invalid attribute flags.", DiagnosticKind.ATTRIBUTE, varDecl);
+            ctx.Fail(error ?? "invalid field flags", DiagnosticKind.ATTRIBUTE, varDecl);
 
         if (varDecl.Type is AstIdentifier id && id.Name == "void")
-            ctx.Fail("Fields must have an explicit type.", DiagnosticKind.TYPE, varDecl);
+            ctx.Fail("field requires explicit type", DiagnosticKind.TYPE, varDecl);
 
         if (varDecl.AssignmentNode.Right is AstNew && fieldFlags.HasFlag(FieldFlags.WEAK))
-            ctx.Fail("Can't use weak flag with new statement.", DiagnosticKind.TYPE, varDecl);
+            ctx.Fail("cannot use 'weak' with 'new'", DiagnosticKind.TYPE, varDecl);
 
         var type = TypeResolver.Resolve(varDecl.Type, ctx);
         VisibilityChecker.CheckField(ctx, classType, accessLevel, type, varDecl);
@@ -54,7 +54,7 @@ public static class ClassMemberCollector
     {
         string name = funcDecl.FunctionNameNode.Name;
         if (!FlagChecker.ParseMethodFlags(funcDecl.FlagNode, classType is StructType, out var accessLevel, out var methodFlags, out var error))
-            ctx.Error(error ?? "Invalid method flags.", DiagnosticKind.ATTRIBUTE, funcDecl);
+            ctx.Error(error ?? "invalid method flags", DiagnosticKind.ATTRIBUTE, funcDecl);
 
         if (methodFlags.HasFlag(MethodFlags.ABSTRACT))
             methodFlags |= MethodFlags.VIRTUAL;
@@ -72,7 +72,7 @@ public static class ClassMemberCollector
 
         if (methodFlags.HasFlag(MethodFlags.ABSTRACT) && !classType.Flags.HasFlag(TypeFlags.ABSTRACT))
         {
-            ctx.Error("Abstract method in non-abstract class.", DiagnosticKind.TYPE, funcDecl.FlagNode!.Flags.First(i => i.Token.Value == "abstract"));
+            ctx.Error("abstract method in non-abstract class", DiagnosticKind.TYPE, funcDecl.FlagNode!.Flags.First(i => i.Token.Value == "abstract"));
         }
 
         return new ClassMethod(name, signature, functionValue, accessLevel, -1, classType, funcDecl.BlockNode, methodFlags, parameters);
@@ -114,7 +114,7 @@ public static class ClassMemberCollector
                 methodFlags.HasFlag(MethodFlags.OVERRIDE) ||
                 methodFlags.HasFlag(MethodFlags.ABSTRACT))
             {
-                ctx.Fail("Constructor cannot be marked 'virtual', 'override', or 'abstract'.", DiagnosticKind.TYPE, funcDecl);
+                ctx.Fail("constructor cannot be 'virtual', 'override', or 'abstract'", DiagnosticKind.TYPE, funcDecl);
             }
 
             return BifyType.CreateVoid(ctx);
@@ -123,7 +123,7 @@ public static class ClassMemberCollector
         if (name == "destructor")
         {
             if (parameters.Count > 0)
-                ctx.Fail("Destructor cannot have parameters.", DiagnosticKind.SYNTAX, funcDecl);
+                ctx.Fail("destructor cannot take parameters", DiagnosticKind.SYNTAX, funcDecl);
 
             methodFlags |= MethodFlags.VIRTUAL;
             return BifyType.CreateVoid(ctx);

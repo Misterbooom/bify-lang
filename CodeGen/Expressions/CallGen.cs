@@ -22,7 +22,7 @@ public class CallGen(CodeGenContext ctx) : CodeGenBase(ctx)
 
         var target = new ExpressionDispatcher(_ctx).EmitExpression(call.CallableName);
         if (target.Type is not CallableType fn)
-            return Fail<TypedValue>($"Can't call {call.CallableName.Token.Value}", DiagnosticKind.TYPE, call);
+            return Fail<TypedValue>($"cannot call '{call.CallableName.Token.Value}'", DiagnosticKind.TYPE, call);
 
         var args = ResolveArgs(call, fn);
         var raw = args.Select(a => a.Value.Value).ToArray();
@@ -36,14 +36,14 @@ public class CallGen(CodeGenContext ctx) : CodeGenBase(ctx)
             throw new Exception("Target node is not member access");
 
         if (access.Right is not AstIdentifier id)
-            return Fail<TypedValue>("Invalid member identifier.", DiagnosticKind.ATTRIBUTE, call);
+            return Fail<TypedValue>("expected member identifier", DiagnosticKind.ATTRIBUTE, call);
 
         var (thisPtr, type, moduleType) = ResolveReceiver(access.Left, call);
         if (moduleType != null)
             return HandleModuleCall(call, moduleType, id.Name);
 
         if (!type!.Methods.TryGetValue(id.Name, out var method))
-            return Fail<TypedValue>($"Method '{id.Name}' does not exist", DiagnosticKind.ATTRIBUTE, call);
+            return Fail<TypedValue>($"no method '{id.Name}' in '{type.Name}'", DiagnosticKind.ATTRIBUTE, call);
 
         if (method.IsPoison)
             return AbortPoison<TypedValue>();
@@ -61,10 +61,10 @@ public class CallGen(CodeGenContext ctx) : CodeGenBase(ctx)
     private TypedValue HandleModuleCall(AstCall call, ModuleType mod, string name)
     {
         if (!mod.ModuleContext.CurrentScope.TryLookup(name, out var sym))
-            return Fail<TypedValue>($"Function '{name}' does not exist in module '{mod.Name}'", DiagnosticKind.ATTRIBUTE, call);
+            return Fail<TypedValue>($"no function '{name}' in module '{mod.Name}'", DiagnosticKind.ATTRIBUTE, call);
 
         if (sym.AccessLevel == AccessLevel.PRIVATE)
-            return Fail<TypedValue>($"Can't access private function '{name}' from module '{mod.Name}'", DiagnosticKind.ACCESS_VIOLATION, call.CallableName);
+            return Fail<TypedValue>($"cannot access private function '{name}' in module '{mod.Name}'", DiagnosticKind.ACCESS_VIOLATION, call.CallableName);
 
         if (sym.Type is not CallableType fn)
             return Fail<TypedValue>($"'{name}' in module '{mod.Name}' is not callable", DiagnosticKind.TYPE, call);

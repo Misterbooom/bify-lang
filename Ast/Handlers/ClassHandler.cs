@@ -36,7 +36,7 @@ namespace BifyLang.Ast.Handlers
                     if (methodsCount > 0)
                     {
                         Builder.Error(
-                            $"{kindTitle} attributes must be defined before methods in the {kindLower} body.",
+                            $"fields must precede methods in '{kindLower}'",
                             DiagnosticKind.SYNTAX,
                             child.Token
                         );
@@ -49,8 +49,7 @@ namespace BifyLang.Ast.Handlers
                 else
                 {
                     Builder.Error(
-                        $"Invalid statement in {kindLower} body. Only methods and variables are allowed. " +
-                        $"Not a {child.GetType().Name.Replace("Ast", "").ToLower()}.",
+                        $"unexpected {child.GetType().Name.Replace("Ast", "").ToLower()} in '{kindLower}' body",
                         DiagnosticKind.SYNTAX,
                         child.Token
                     );

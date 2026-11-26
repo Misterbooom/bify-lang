@@ -66,7 +66,7 @@ public class ClassLayoutBuilder(CodeGenContext ctx) : LayoutBuilder(ctx)
             if (_ctx.TypeRegistry.TryGetType(parentName, out var pType) && pType is ClassType cp)
                 parent = cp;
             else
-                Fail($"Class '{info.Name}' inherits from unknown class '{parentName}'.", DiagnosticKind.TYPE,
+                Fail($"unknown base class '{parentName}'", DiagnosticKind.TYPE,
                     info.ClassNode);
         }
 
@@ -109,7 +109,7 @@ public class ClassLayoutBuilder(CodeGenContext ctx) : LayoutBuilder(ctx)
             return;
         if (parent.Flags.HasFlag(TypeFlags.FINAL))
         {
-            _ctx.Error("Can't inherit from 'final' class.",DiagnosticKind.TYPE, fallbackNode);
+            _ctx.Error("cannot inherit from final class", DiagnosticKind.TYPE, fallbackNode);
         }
 
         foreach (var kvp in parent.Fields)
@@ -134,13 +134,13 @@ public class ClassLayoutBuilder(CodeGenContext ctx) : LayoutBuilder(ctx)
 
             if (classType.Fields.ContainsKey(name))
             {
-                Error($"Duplicate field '{name}' in class '{info.Name}'.", DiagnosticKind.NAME, varDecl);
+                Error($"duplicate field '{name}' in '{info.Name}'", DiagnosticKind.NAME, varDecl);
                 continue;
             }
 
             if (classType.Methods.ContainsKey(name) || name == DestructorSynthesizer.DestructorName)
             {
-                Error($"Field '{name}' in class '{info.Name}' conflicts with existing method.", DiagnosticKind.NAME, varDecl);
+                Error($"field '{name}' conflicts with method in '{info.Name}'", DiagnosticKind.NAME, varDecl);
                 continue;
             }
 
@@ -168,7 +168,7 @@ public class ClassLayoutBuilder(CodeGenContext ctx) : LayoutBuilder(ctx)
 
             if (classType.Fields.ContainsKey(name))
             {
-                Error($"Method '{name}' in class '{classType.FullName}' conflicts with existing field.", DiagnosticKind.NAME, funcDecl);
+                Error($"method '{name}' conflicts with field in '{classType.FullName}'", DiagnosticKind.NAME, funcDecl);
                 continue;
             }
             TryAddMethod(funcDecl, classType, name);
@@ -197,7 +197,7 @@ public class ClassLayoutBuilder(CodeGenContext ctx) : LayoutBuilder(ctx)
             if (!parentMethod.IsAbstract) continue;
             if (classType.Methods.TryGetValue(parentMethodName, out var method) && !method.IsOverride)
             {
-                _ctx.Error($"Abstract method '{method.Name}' must be implemented.", DiagnosticKind.ABSTRACT_METHOD_NOT_IMPLEMENTED,fallbackNode);
+                _ctx.Error($"unimplemented abstract method '{method.Name}'", DiagnosticKind.ABSTRACT_METHOD_NOT_IMPLEMENTED, fallbackNode);
             }
         }
 
@@ -213,7 +213,7 @@ public class ClassLayoutBuilder(CodeGenContext ctx) : LayoutBuilder(ctx)
             method.VTableIndex = vtableIndex;
 
             if (classType.Methods.ContainsKey(name) && !method.IsOverride)
-                Fail($"Duplicate method '{name}' in class '{classType.FullName}'.", DiagnosticKind.NAME, funcDecl);
+                Fail($"duplicate method '{name}' in '{classType.FullName}'", DiagnosticKind.NAME, funcDecl);
 
             classType.Methods[name] = method;
         }
@@ -233,7 +233,7 @@ public class ClassLayoutBuilder(CodeGenContext ctx) : LayoutBuilder(ctx)
     {
         var dtors = funcDecls.Where(f => f.FunctionNameNode.Name == DestructorSynthesizer.DestructorName).ToList();
         if (dtors.Count > 1)
-            Error($"Class '{info.Name}' cannot have multiple destructors.", DiagnosticKind.NAME, dtors[1]);
+            Error($"duplicate destructor in '{info.Name}'", DiagnosticKind.NAME, dtors[1]);
 
         var dtor = dtors.FirstOrDefault();
         if (dtor != null)

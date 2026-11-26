@@ -119,7 +119,7 @@ public class SwitchGen(CodeGenContext ctx) : CodeGenBase(ctx)
             return caseVal;
 
         if (caseVal.IsAConstantInt.Handle == IntPtr.Zero)
-            Fail("Case value must be a constant integer matching switch type", DiagnosticKind.TYPE, caseNode);
+            Fail("case value must be constant int", DiagnosticKind.TYPE, caseNode);
 
         return LLVMValueRef.CreateConstInt(expectedType, (ulong)caseVal.ConstIntSExt, false);
     }

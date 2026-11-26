@@ -65,7 +65,7 @@ public class TypeRegistry
             return arrType;
         }
 
-        return _ctx.Fail<BifyType>("Type not found: " + name, DiagnosticKind.NAME);
+        return _ctx.Fail<BifyType>($"unknown type '{name}'", DiagnosticKind.NAME);
     }
     public override string ToString()
     {

@@ -29,12 +29,12 @@ public class VariableDeclGen(CodeGenContext ctx) : CodeGenBase(ctx)
             {
                 if (!FlagChecker.CheckVariableFlags(varDecl.Flag?.Flags?.Select(i => i.Token.Value) ?? [], out var error))
                 {
-                    Fail(error ?? "Invalid variable flags.", DiagnosticKind.SYNTAX, varDecl);
+                    Fail(error ?? "invalid variable flags", DiagnosticKind.SYNTAX, varDecl);
                 }
 
                 if (varDecl.AssignmentNode.Right is AstNew && varDecl.Flag?.HasFlag("weak") == true)
                 {
-                    Fail("Can't use weak flag with new statement", DiagnosticKind.TYPE, varDecl);
+                    Fail("cannot use 'weak' with 'new'", DiagnosticKind.TYPE, varDecl);
                 }
 
                 var (varType, initialValue) = ResolveVariableType(_ctx, varDecl);
@@ -43,7 +43,7 @@ public class VariableDeclGen(CodeGenContext ctx) : CodeGenBase(ctx)
                 bool isWeak = varDecl.Flag?.HasFlag("weak") == true;
                 if (isWeak && !varType.IsReference)
                 {
-                    Fail("Can't use weak flag with non-reference type.", DiagnosticKind.TYPE, varDecl);
+                    Fail("'weak' requires reference type", DiagnosticKind.TYPE, varDecl);
                 }
 
                 bool isConst = varDecl.Flag?.Token.Value == "val";
@@ -67,11 +67,11 @@ public class VariableDeclGen(CodeGenContext ctx) : CodeGenBase(ctx)
         if (varDecl.Type is AstIdentifier id && id.Name == "void")
         {
             if (varDecl.AssignmentNode.Right == null)
-                ctx.Fail("Implicitly-typed variables must be initialized.", DiagnosticKind.TYPE, varDecl);
+                ctx.Fail("inferred variable requires initializer", DiagnosticKind.TYPE, varDecl);
 
             var init = expressionDispatcher.EmitExpression(varDecl.AssignmentNode.Right!);
             if (init.Type.Name == "void")
-                ctx.Fail("Cannot declare a variable of type 'void'.", DiagnosticKind.TYPE, varDecl);
+                ctx.Fail("variable cannot have type 'void'", DiagnosticKind.TYPE, varDecl);
 
             return (init.Type, init);
         }

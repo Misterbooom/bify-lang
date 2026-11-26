@@ -22,7 +22,7 @@ public class MethodEmitter(CodeGenContext ctx) : CodeGenBase(ctx)
         {
             if (classMethod.Body != null)
             {
-                _ctx.Error("Abstract methods cannot have body.",DiagnosticKind.SYNTAX, fallback);
+                _ctx.Error("abstract method cannot have body", DiagnosticKind.SYNTAX, fallback);
             }
             var entry = classMethod.FunctionValue.AppendBasicBlock("entry");
             _ctx.Builder.PositionAtEnd(entry);

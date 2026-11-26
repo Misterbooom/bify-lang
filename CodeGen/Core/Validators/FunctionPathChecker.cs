@@ -28,7 +28,7 @@ public class FunctionPathChecker
         AllPathsReturn = Check(node);
         if (!_isVoid && !AllPathsReturn)
         {
-            _ctx?.Fail($"Not all execution paths return a value for {_functionType.Name}", DiagnosticKind.TYPE, nameNode);
+            _ctx?.Fail($"missing return value of type '{_functionType.Name}'", DiagnosticKind.TYPE, nameNode);
         }
     }
 
@@ -63,11 +63,11 @@ public class FunctionPathChecker
 
         if (!hasArgs && !_isVoid)
         {
-            _ctx?.Fail($"Expected '{_functionType.Name}' but got 'void'", DiagnosticKind.TYPE, astReturn);
+            _ctx?.Fail($"expected type '{_functionType.Name}', found 'void'", DiagnosticKind.TYPE, astReturn);
         }
         else if (hasArgs && _isVoid)
         {
-            _ctx?.Fail("Cannot return a value from a 'void' function", DiagnosticKind.TYPE, astReturn);
+            _ctx?.Fail("cannot return value from 'void' function", DiagnosticKind.TYPE, astReturn);
         }
 
         return true;

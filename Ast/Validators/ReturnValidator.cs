@@ -13,7 +13,7 @@ namespace BifyLang.Ast.Validators
             if (!CanBeReturned(node.ArgumentsNode))
             {
                 builder.Fail(
-                    $"'{node.GetType().Name.Replace("Ast", "")}' Cannot be returned",
+                    $"cannot return '{node.GetType().Name.Replace("Ast", "").ToLowerInvariant()}'",
                     DiagnosticKind.TYPE,
                     node.Token
                 );

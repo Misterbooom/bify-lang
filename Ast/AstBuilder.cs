@@ -111,7 +111,7 @@ namespace BifyLang.Ast
                 if (!IsHandlingLine)
                 {
                     BifyDebug.LogError("\n" + string.Join("\n", Nodes));
-                    Fail("Invalid Syntax! Check your input for missing operators or delimiters.", DiagnosticKind.SYNTAX, Nodes[1].Token);
+                    Fail("invalid syntax", DiagnosticKind.SYNTAX, Nodes[1].Token);
                 }
                 else
                 {
@@ -197,7 +197,7 @@ namespace BifyLang.Ast
         {
             if (IsAtEnd())
             {
-                return Fail<AstBlock>($"{name} body not found.", DiagnosticKind.SYNTAX, GetPreviousToken());
+                return Fail<AstBlock>($"missing {name.ToLowerInvariant()} body", DiagnosticKind.SYNTAX, GetPreviousToken());
             }
             List<Token> bodyTokens = null;
             if (GetNextToken()?.Type == TokenType.LCUR)
@@ -206,7 +206,7 @@ namespace BifyLang.Ast
             }
             if (bodyTokens == null)
             {
-                return Fail<AstBlock>($"{name} body not found.", DiagnosticKind.SYNTAX, PeekTokenOrNull() ?? GetPreviousToken());
+                return Fail<AstBlock>($"missing {name.ToLowerInvariant()} body", DiagnosticKind.SYNTAX, PeekTokenOrNull() ?? GetPreviousToken());
             }
 
             AstBlock blockNode = ParseBlock(bodyTokens);

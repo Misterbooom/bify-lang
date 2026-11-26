@@ -100,7 +100,7 @@ internal class DeclarationParser(AstBuilder builder)
         if (i >= tokens.Count || tokens[i].Type != TokenType.LPAREN)
         {
             _builder.Fail(
-                $"Expected '(' after '{ctorToken.Value}'.",
+                $"expected '(' after '{ctorToken.Value}'",
                 DiagnosticKind.SYNTAX,
                 i < tokens.Count ? tokens[i] : ctorToken
             );
@@ -109,7 +109,7 @@ internal class DeclarationParser(AstBuilder builder)
         int closeParen = FindClosing(tokens, i, TokenType.LPAREN, TokenType.RPAREN);
         if (closeParen < 0)
         {
-            _builder.Fail($"Expected ')' in '{ctorToken.Value}' declaration.", DiagnosticKind.SYNTAX, tokens[i]);
+            _builder.Fail($"expected ')' after '{ctorToken.Value}' params", DiagnosticKind.SYNTAX, tokens[i]);
         }
 
         header = new DeclarationHeader
@@ -134,8 +134,8 @@ internal class DeclarationParser(AstBuilder builder)
 
         Token? unexpected = i < tokens.Count ? tokens[i] : null;
         _builder.Error(unexpected is null
-            ? "Expected declaration name."
-            : $"Invalid declaration name: '{unexpected.Value}'");
+            ? "expected declaration name"
+            : $"expected identifier, found '{unexpected.Value}'");
 
         Token poison = unexpected ?? new Token(TokenType.POISON, "unknown");
         return new AstIdentifier(poison, string.Empty) { IsPoison = true };

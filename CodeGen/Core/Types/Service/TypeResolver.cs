@@ -26,14 +26,14 @@ public static class TypeResolver
                 if (IsPrivateType(type, ctx))
                 {
                     return ctx.Fail<BifyType>(
-                        $"Cannot access private type '{type.Name}' from module '{((ICompositeType)type).ModuleName}'.",
+                        $"cannot access private type '{type.Name}' in module '{((ICompositeType)type).ModuleName}'",
                         DiagnosticKind.ACCESS_VIOLATION,
                         typeNode);
                 }
                 return type;
             }
             BifyDebug.Log(NameMangler.GenerateTypeName(ctx.ModuleContext.Name, id.Name));
-            return ctx.Fail<BifyType>("Cannot resolve type " + id.Name, DiagnosticKind.NAME, typeNode);
+            return ctx.Fail<BifyType>($"unknown type '{id.Name}'", DiagnosticKind.NAME, typeNode);
         }
         return typeNode switch
         {
@@ -42,7 +42,7 @@ public static class TypeResolver
             //     ResolvePointer(unary, ctx),
             // AstIndexOperator indexOp =>
             //     ResolveArray(indexOp, ctx),
-            _ => ctx.Fail<BifyType>($"{typeNode.GetType()} is not a known type.", DiagnosticKind.UNKNOWN, typeNode)
+            _ => ctx.Fail<BifyType>($"invalid type '{typeNode.Token.Value}'", DiagnosticKind.UNKNOWN, typeNode)
         };
     }
 
@@ -56,15 +56,15 @@ public static class TypeResolver
                 if (IsPrivateType(type, ctx))
                 {
                     return ctx.Fail<BifyType>(
-                        $"Cannot access private type '{type.Name}' from module '{((ICompositeType)type).ModuleName}'.",
+                        $"cannot access private type '{type.Name}' in module '{((ICompositeType)type).ModuleName}'",
                         DiagnosticKind.ACCESS_VIOLATION,
                         memberAccess);
                 }
                 return type;
             }
-            return ctx.Fail<BifyType>($"Cannot resolve type '{modId.Name}.{typeId.Name}'.", DiagnosticKind.NAME, memberAccess);
+            return ctx.Fail<BifyType>($"unknown type '{modId.Name}.{typeId.Name}'", DiagnosticKind.NAME, memberAccess);
         }
-        return ctx.Fail<BifyType>("Invalid type expression.", DiagnosticKind.UNKNOWN, memberAccess);
+        return ctx.Fail<BifyType>("invalid type expression", DiagnosticKind.UNKNOWN, memberAccess);
     }
 
     private static bool IsPrivateType(BifyType type, CodeGenContext ctx) =>

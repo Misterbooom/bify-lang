@@ -21,7 +21,7 @@ public class UnaryOpGen(CodeGenContext ctx) : CodeGenBase(ctx)
 
         if (isStatement)
         {
-            return Fail<TypedValue>("Invalid statement!", DiagnosticKind.SYNTAX, op);
+            return Fail<TypedValue>("invalid statement", DiagnosticKind.SYNTAX, op);
         }
 
         var value = new ExpressionDispatcher(_ctx).EmitExpression(op.Operand);

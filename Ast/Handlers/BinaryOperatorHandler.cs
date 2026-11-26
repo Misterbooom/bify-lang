@@ -98,7 +98,7 @@ namespace BifyLang.Ast.Handlers
             if (Builder.IsAtEnd())
             {
                 Builder.Fail(
-                    $"Unexpected end of expression. Please check that your expression is complete.: {Builder.GetPreviousToken()}",
+                    "unexpected end of expression",
                     DiagnosticKind.SYNTAX,
                     Builder.GetPreviousToken()
                 );

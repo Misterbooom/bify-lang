@@ -90,16 +90,16 @@ public static class FlagChecker
             return false;
 
         if (list.Contains("virtual") && list.Contains("override"))
-            return Fail("Method cannot be both 'virtual' and 'override'.", out error);
+            return Fail("conflicting flags 'virtual' and 'override'", out error);
 
         if (list.Contains("abstract") && list.Contains("override"))
-            return Fail("Method cannot be both 'abstract' and 'override'.", out error);
+            return Fail("conflicting flags 'abstract' and 'override'", out error);
 
         if (list.Contains("abstract") && list.Contains("final"))
-            return Fail("Method cannot be both 'abstract' and 'final'.", out error);
+            return Fail("conflicting flags 'abstract' and 'final'", out error);
 
         if (list.Contains("final") && !list.Contains("override"))
-            return Fail("Method marked 'final' must also be marked 'override'.", out error);
+            return Fail("'final' method requires 'override'", out error);
 
         return true;
     }
@@ -114,7 +114,7 @@ public static class FlagChecker
             return false;
 
         if (list.Contains("abstract") && list.Contains("final"))
-            return Fail("Class cannot be both 'abstract' and 'final'.", out error);
+            return Fail("conflicting flags 'abstract' and 'final'", out error);
 
         return true;
     }
@@ -163,15 +163,15 @@ public static class FlagChecker
         foreach (var f in flags)
         {
             if (!allowed.Contains(f))
-                return Fail($"Flag '{f}' is not allowed on {target}.", out error);
+                return Fail($"flag '{f}' not allowed on {target}", out error);
 
             if (!seen.Add(f))
-                return Fail($"Flag '{f}' is specified multiple times.", out error);
+                return Fail($"duplicate flag '{f}'", out error);
 
             if (f is "public" or "private" or "protected")
             {
                 if (hasAccess)
-                    return Fail($"Only one access modifier can be specified on {target}.", out error);
+                    return Fail($"multiple access modifiers on {target}", out error);
                 hasAccess = true;
             }
         }

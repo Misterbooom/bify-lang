@@ -42,7 +42,7 @@ public static class MemberResolver
                 thisSym.Type is not ICompositeType ct ||
                 ct.FullName != compositeType.FullName)
             {
-                ctx.Fail($"Cannot access private member '{memberName}' of '{compositeType.FullName}'", DiagnosticKind.ATTRIBUTE);
+                ctx.Fail($"cannot access private member '{memberName}' of '{compositeType.FullName}'", DiagnosticKind.ATTRIBUTE);
             }
         }
         else if (accessLevel == AccessLevel.PROTECTED)
@@ -57,7 +57,7 @@ public static class MemberResolver
             }
 
             if (!allowed)
-                ctx.Fail($"Cannot access protected member '{memberName}' of '{compositeType.FullName}'", DiagnosticKind.ATTRIBUTE);
+                ctx.Fail($"cannot access protected member '{memberName}' of '{compositeType.FullName}'", DiagnosticKind.ATTRIBUTE);
         }
     }
 

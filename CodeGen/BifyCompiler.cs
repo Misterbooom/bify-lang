@@ -115,14 +115,14 @@ public class BifyCompiler
             if (fn.Name == "main" || (parts.Length == 2 && parts[1] == "main"))
             {
                 if (userMain.Handle != IntPtr.Zero)
-                    ctx.Fail($"Duplicate main function name: {fn.Name}", DiagnosticKind.NAME);
+                    ctx.Fail($"duplicate 'main' function '{fn.Name}'", DiagnosticKind.NAME);
 
                 userMain = fn;
             }
         }
 
         if (userMain.Handle == IntPtr.Zero)
-            ctx.Fail("Main function not found.", DiagnosticKind.NAME);
+            ctx.Fail("missing 'main' function", DiagnosticKind.NAME);
 
         return userMain;
     }

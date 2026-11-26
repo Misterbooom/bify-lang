@@ -36,7 +36,7 @@ public static class VisibilityChecker
         if (IsLeakingPrivateType(returnType, access))
         {
             ctx.Fail(
-                $"Cannot return private type '{returnType.Name}' from public function '{funcDecl.FunctionNameNode.Name}'.",
+                $"cannot return private type '{returnType.Name}' from public function '{funcDecl.FunctionNameNode.Name}'",
                 DiagnosticKind.ACCESS_VIOLATION,
                 funcDecl.TypeNode);
         }
@@ -46,7 +46,7 @@ public static class VisibilityChecker
             if (IsLeakingPrivateType(param.Type, access))
             {
                 ctx.Fail(
-                    $"Exposing private type '{param.Type.Name}' in parameter '{param.Name}' of public function '{funcDecl.FunctionNameNode.Name}'.",
+                    $"private type '{param.Type.Name}' in parameter '{param.Name}' of public function '{funcDecl.FunctionNameNode.Name}'",
                     DiagnosticKind.ACCESS_VIOLATION,
                     funcDecl.ArgumentsNode);
             }
@@ -65,7 +65,7 @@ public static class VisibilityChecker
         if (IsLeakingPrivateType(returnType, access, declaringType))
         {
             ctx.Error(
-                $"Cannot return private type '{returnType.Name}' from {visibility} method '{declaringType.Name}.{funcDecl.FunctionNameNode.Name}'.",
+                $"cannot return private type '{returnType.Name}' from {visibility} method '{declaringType.Name}.{funcDecl.FunctionNameNode.Name}'",
                 DiagnosticKind.ACCESS_VIOLATION,
                 funcDecl.TypeNode);
         }
@@ -75,7 +75,7 @@ public static class VisibilityChecker
             if (IsLeakingPrivateType(param.Type, access, declaringType))
             {
                 ctx.Error(
-                    $"Exposing private type '{param.Type.Name}' in parameter '{param.Name}' of {visibility} method '{declaringType.Name}.{funcDecl.FunctionNameNode.Name}'.",
+                    $"private type '{param.Type.Name}' in parameter '{param.Name}' of {visibility} method '{declaringType.Name}.{funcDecl.FunctionNameNode.Name}'",
                     DiagnosticKind.ACCESS_VIOLATION,
                     funcDecl.ArgumentsNode);
             }
@@ -95,7 +95,7 @@ public static class VisibilityChecker
         string visibility = access == AccessLevel.PROTECTED ? "protected" : "public";
         string fieldName = varDecl.AssignmentNode.Left.Token.Value;
         ctx.Error(
-            $"Exposing private type '{fieldType.Name}' in {visibility} field '{declaringType.Name}.{fieldName}'.",
+            $"private type '{fieldType.Name}' in {visibility} field '{declaringType.Name}.{fieldName}'",
             DiagnosticKind.ACCESS_VIOLATION,
             varDecl.Type);
     }
@@ -110,7 +110,7 @@ public static class VisibilityChecker
             return;
 
         ctx.Error(
-            $"Public class '{derivedType.Name}' can't inherit from private class '{parentType.Name}'.",
+            $"public class '{derivedType.Name}' cannot inherit from private class '{parentType.Name}'",
             DiagnosticKind.ACCESS_VIOLATION,
             parentNode);
     }

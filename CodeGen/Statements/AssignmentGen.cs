@@ -19,7 +19,7 @@ public class AssignmentGen(CodeGenContext ctx) : CodeGenBase(ctx)
     {
         var lValue = new LValueResolver(_ctx).ResolveLValue(assignmentOp.IdentifierNode);
         if (lValue.IsConstant)
-            Fail("Assigning to constant variable!", DiagnosticKind.TYPE, assignmentOp);
+            Fail("cannot assign to constant", DiagnosticKind.TYPE, assignmentOp);
 
         TypedValue value = new ExpressionDispatcher(_ctx).EmitExpression(assignmentOp.ValueNode);
 
@@ -30,7 +30,7 @@ public class AssignmentGen(CodeGenContext ctx) : CodeGenBase(ctx)
             TokenType.SUBE => TokenType.SUB,
             TokenType.MULE => TokenType.MUL,
             TokenType.DIVE or TokenType.FLOORDIVE => TokenType.DIV,
-            _ => Fail<TokenType?>($"Unsupported assignment operator: {assignmentOp.Token.Value}", DiagnosticKind.SYNTAX, assignmentOp)
+            _ => Fail<TokenType?>($"unsupported assignment op '{assignmentOp.Token.Value}'", DiagnosticKind.SYNTAX, assignmentOp)
         };
 
         if (binOp.HasValue)

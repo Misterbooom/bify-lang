@@ -36,12 +36,12 @@ public static class VTableBuilder
         if (method.IsOverride)
         {
             if (!hasParentSlot || slot == null)
-                ctx.Fail($"No virtual method found for '{method.Name}'", DiagnosticKind.TYPE, node);
+                ctx.Fail($"no virtual method '{method.Name}' to override", DiagnosticKind.TYPE, node);
 
 
             if (slot.Method.IsFinal)
             {
-                ctx.Fail("Cannot override 'final' method", DiagnosticKind.TYPE, node);
+                ctx.Fail($"cannot override final method '{method.Name}'", DiagnosticKind.TYPE, node);
             }
             VerifyOverrideSignature(ctx, slot.Method, method, node);
             vtable.Replace(slot.Index, method);
@@ -51,13 +51,13 @@ public static class VTableBuilder
         if (method.IsVirtual)
         {
             if (hasParentSlot)
-                ctx.Fail($"Method '{method.Name}' is marked 'virtual' but already exists in base class.", DiagnosticKind.TYPE, node);
+                ctx.Fail($"duplicate virtual method '{method.Name}'; use 'override'", DiagnosticKind.TYPE, node);
 
             return vtable.AddMethod(method);
         }
 
         if (hasParentSlot)
-            ctx.Fail($"Method '{method.Name}' hides inherited virtual method.", DiagnosticKind.TYPE, node);
+            ctx.Fail($"method '{method.Name}' hides virtual method without 'override'", DiagnosticKind.TYPE, node);
 
         return -1;
     }
@@ -67,7 +67,7 @@ public static class VTableBuilder
         if (parentMethod.Signature.Type != overrideMethod.Signature.Type)
         {
             ctx.Fail(
-                $"Override method '{overrideMethod.Name}' signature does not match base method '{parentMethod.DeclaringType}.{parentMethod.Name}'.",
+                $"override '{overrideMethod.Name}' signature mismatches '{parentMethod.DeclaringType.Name}.{parentMethod.Name}'",
                 DiagnosticKind.TYPE,
                 node);
         }
