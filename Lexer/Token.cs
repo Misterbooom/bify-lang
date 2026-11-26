@@ -106,7 +106,8 @@ namespace BifyLang.Lexer
         POISON,
         VAL,
         MUT,
-        ARROW
+        ARROW,
+        STRUCT
     }
     public class Token(TokenType type, string value)
     {

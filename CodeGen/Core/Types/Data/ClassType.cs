@@ -15,6 +15,11 @@ public class ClassType(string name, string fullName, LLVMTypeRef pointerType, LL
     public Dictionary<string, ClassMethod> Methods { get; } = new();
     public string FullName { get; } = fullName;
     public string ModuleName { get; } = moduleName;
+    public int MinType { get; init; }
+    public int MaxType { get; init; }
+    public TypeFlags Flags { get; init; }
+
+
     public bool IsSubclassOf(ClassType other)
     {
         var cur = this;

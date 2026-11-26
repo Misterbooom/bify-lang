@@ -62,7 +62,7 @@ namespace BifyLang.Lexer
                     {
                         Diagnostics.Report(
                             ErrorMessage.UnmatchedClosingParenthesis(),
-                            DiagnosticKind.Syntax,
+                            DiagnosticKind.SYNTAX,
                             new SourceLocation(_filePath, _lineCount, tokenColumn)
                         );
                         AddToken(new Token(TokenType.POISON, ")") { IsPoison = true }, tokenColumn);
@@ -131,7 +131,7 @@ namespace BifyLang.Lexer
                     {
                         Diagnostics.Report(
                             ErrorMessage.UnexpectedToken(currentChar.ToString()),
-                            DiagnosticKind.Syntax,
+                            DiagnosticKind.SYNTAX,
                             new SourceLocation(_filePath, _lineCount, tokenColumn)
                         );
                         AddToken(new Token(TokenType.POISON, currentChar.ToString()) { IsPoison = true }, tokenColumn);
@@ -279,7 +279,7 @@ namespace BifyLang.Lexer
 
             Diagnostics.Report(
                 ErrorMessage.MissingCloseQuotationMark(),
-                DiagnosticKind.Syntax,
+                DiagnosticKind.SYNTAX,
                 new SourceLocation(_filePath, _lineCount, startColumn)
             );
             return new Token(tokenType, result.ToString()) { IsPoison = true };

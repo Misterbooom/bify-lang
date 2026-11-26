@@ -9,7 +9,7 @@ namespace BifyLang.Ast.Handlers
         {
             if (Builder.Tokens.Count > 1)
             {
-                Builder.Fail($"Invalid syntax of {token.Value} statement!", DiagnosticKind.Syntax, token);
+                Builder.Fail($"Invalid syntax of {token.Value} statement!", DiagnosticKind.SYNTAX, token);
             }
             if (token.Type == TokenType.BREAK)
             {

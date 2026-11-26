@@ -21,7 +21,7 @@ public class UnaryOpGen(CodeGenContext ctx) : CodeGenBase(ctx)
 
         if (isStatement)
         {
-            return Fail<TypedValue>("Invalid statement!", DiagnosticKind.Syntax, op);
+            return Fail<TypedValue>("invalid statement", DiagnosticKind.SYNTAX, op);
         }
 
         var value = new ExpressionDispatcher(_ctx).EmitExpression(op.Operand);
@@ -30,23 +30,23 @@ public class UnaryOpGen(CodeGenContext ctx) : CodeGenBase(ctx)
             TokenType.SUB => HandleNeg(value, op),
             TokenType.ADD => HandlePos(value, op),
             TokenType.NOT => HandleNot(value, op),
-            _ => Fail<TypedValue>($"Unexpected unary operator: {op.Token.Value}", DiagnosticKind.Syntax, op)
+            _ => Fail<TypedValue>($"Unexpected unary operator: {op.Token.Value}", DiagnosticKind.SYNTAX, op)
         };
     }
 
     private (LLVMValueRef Pointer, BifyType Type, string Name) ResolveIncDecTarget(AstUnaryOperator op)
     {
         if (op.Operand is not AstIdentifier id)
-            return Fail<(LLVMValueRef, BifyType, string)>($"Operator '{op.Token.Value}' requires a variable", DiagnosticKind.Type, op);
+            return Fail<(LLVMValueRef, BifyType, string)>($"Operator '{op.Token.Value}' requires a variable", DiagnosticKind.TYPE, op);
 
         if (!_ctx.CurrentScope.TryLookup(id.Name, out var symbol))
-            return Fail<(LLVMValueRef, BifyType, string)>($"Variable '{id.Name}' is not defined", DiagnosticKind.Name, id);
+            return Fail<(LLVMValueRef, BifyType, string)>($"Variable '{id.Name}' is not defined", DiagnosticKind.NAME, id);
 
         if (symbol.IsPoison)
             return AbortPoison<(LLVMValueRef, BifyType, string)>();
 
         if (symbol.IsConstant)
-            return Fail<(LLVMValueRef, BifyType, string)>($"Cannot mutate constant variable '{symbol.Name}'", DiagnosticKind.Type, op);
+            return Fail<(LLVMValueRef, BifyType, string)>($"Cannot mutate constant variable '{symbol.Name}'", DiagnosticKind.TYPE, op);
 
         return (symbol.Pointer, symbol.Type, symbol.Name);
     }
@@ -70,7 +70,7 @@ public class UnaryOpGen(CodeGenContext ctx) : CodeGenBase(ctx)
         }
         else
         {
-            return Fail<TypedValue>($"Operator '{op.Token.Value}' is not supported for type '{type.Name}'", DiagnosticKind.Type, op);
+            return Fail<TypedValue>($"Operator '{op.Token.Value}' is not supported for type '{type.Name}'", DiagnosticKind.TYPE, op);
         }
 
         _ctx.Builder.BuildStore(next, pointer);
@@ -85,7 +85,7 @@ public class UnaryOpGen(CodeGenContext ctx) : CodeGenBase(ctx)
         if (val.Type.Name is "float" or "double")
             return new TypedValue(_ctx.Builder.BuildFNeg(val.Value, "fnegtmp"), val.Type);
 
-        return Fail<TypedValue>($"Cannot negate type '{val.Type.Name}'", DiagnosticKind.Type, op);
+        return Fail<TypedValue>($"Cannot negate type '{val.Type.Name}'", DiagnosticKind.TYPE, op);
     }
 
     private TypedValue HandlePos(TypedValue val, AstUnaryOperator op)
@@ -93,7 +93,7 @@ public class UnaryOpGen(CodeGenContext ctx) : CodeGenBase(ctx)
         if (val.Type.Name is "int" or "char" or "float" or "double")
             return val;
 
-        return Fail<TypedValue>($"Cannot apply '+' to type '{val.Type.Name}'", DiagnosticKind.Type, op);
+        return Fail<TypedValue>($"Cannot apply '+' to type '{val.Type.Name}'", DiagnosticKind.TYPE, op);
     }
 
     private TypedValue HandleNot(TypedValue val, AstUnaryOperator op)
@@ -108,6 +108,6 @@ public class UnaryOpGen(CodeGenContext ctx) : CodeGenBase(ctx)
             return new TypedValue(_ctx.Builder.BuildICmp(LLVMIntPredicate.LLVMIntEQ, val.Value, zero, "nottmp"), boolType);
         }
 
-        return Fail<TypedValue>($"Cannot apply '!' to type '{val.Type.Name}'", DiagnosticKind.Type, op);
+        return Fail<TypedValue>($"Cannot apply '!' to type '{val.Type.Name}'", DiagnosticKind.TYPE, op);
     }
 }

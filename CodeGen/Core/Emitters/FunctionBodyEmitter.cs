@@ -5,7 +5,9 @@ using BifyLang.Ast;
 using BifyLang.CodeGen.Core.Class;
 using BifyLang.CodeGen.Core.Context;
 using BifyLang.CodeGen.Core.Types.Data;
+using BifyLang.CodeGen.Core.Types.Service;
 using BifyLang.CodeGen.Statements;
+using BifyLang.Exceptions;
 using LLVMSharp.Interop;
 
 namespace BifyLang.CodeGen.Core.Emitters;
@@ -18,6 +20,7 @@ public class FunctionBodyEmitter(CodeGenContext ctx) : CodeGenBase(ctx)
         BifyType returnType,
         IReadOnlyList<ParameterInfo> parameters,
         AstNode? body,
+
         bool isMethod = false,
         bool isConstructor = false,
         bool isDestructor = false,
@@ -44,6 +47,7 @@ public class FunctionBodyEmitter(CodeGenContext ctx) : CodeGenBase(ctx)
                 var loaded = _ctx.Builder.BuildLoad2(thisSym.Type.Type, thisSym.Pointer, "this_loaded");
                 ClassBuilder.InitFields(_ctx, declaringClass, loaded);
             }
+
             if (body is AstBlock block)
             {
                 new StatementDispatcher(_ctx).EmitBlock(block);

@@ -82,12 +82,12 @@ func render(width: int, height: int) {}
     [Test]
     public void CodeGen_DuplicateParameterNameThrows()
     {
-        AssertCompileError("func badFunc(x: int, x: float) {}", DiagnosticKind.Name);
+        AssertCompileError("func badFunc(x: int, x: float) {}", DiagnosticKind.NAME);
     }
 
     [Test]
     public void CodeGen_NonVoidWithoutReturnThrows()
     {
-        AssertCompileError("func badFunc() -> int {}", DiagnosticKind.Type);
+        AssertCompileError("func badFunc() -> int {}", DiagnosticKind.TYPE);
     }
 }

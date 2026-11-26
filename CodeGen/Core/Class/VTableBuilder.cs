@@ -36,8 +36,13 @@ public static class VTableBuilder
         if (method.IsOverride)
         {
             if (!hasParentSlot || slot == null)
-                ctx.Fail($"Method '{method.Name}' is marked 'override' but no virtual method with this name was found in base classes.", DiagnosticKind.Type, node);
+                ctx.Fail($"no virtual method '{method.Name}' to override", DiagnosticKind.TYPE, node);
 
+
+            if (slot.Method.IsFinal)
+            {
+                ctx.Fail($"cannot override final method '{method.Name}'", DiagnosticKind.TYPE, node);
+            }
             VerifyOverrideSignature(ctx, slot.Method, method, node);
             vtable.Replace(slot.Index, method);
             return slot.Index;
@@ -46,13 +51,13 @@ public static class VTableBuilder
         if (method.IsVirtual)
         {
             if (hasParentSlot)
-                ctx.Fail($"Method '{method.Name}' is marked 'virtual' but already exists in base class VTable. Use 'override' instead.", DiagnosticKind.Type, node);
+                ctx.Fail($"duplicate virtual method '{method.Name}'; use 'override'", DiagnosticKind.TYPE, node);
 
             return vtable.AddMethod(method);
         }
 
         if (hasParentSlot)
-            ctx.Fail($"Method '{method.Name}' hides inherited virtual method without 'override' flag.", DiagnosticKind.Type, node);
+            ctx.Fail($"method '{method.Name}' hides virtual method without 'override'", DiagnosticKind.TYPE, node);
 
         return -1;
     }
@@ -62,17 +67,17 @@ public static class VTableBuilder
         if (parentMethod.Signature.Type != overrideMethod.Signature.Type)
         {
             ctx.Fail(
-                $"Override method '{overrideMethod.Name}' signature does not match base method '{parentMethod.DeclaringType}.{parentMethod.Name}'.",
-                DiagnosticKind.Type,
+                $"override '{overrideMethod.Name}' signature mismatches '{parentMethod.DeclaringType.Name}.{parentMethod.Name}'",
+                DiagnosticKind.TYPE,
                 node);
         }
     }
-    public static void Build(VTable vTable,CodeGenContext _ctx, string className)
+    public static void Build(VTable vTable,CodeGenContext ctx, string className)
     {
-        var ptrType = LLVMTypeRef.CreatePointer(_ctx.Context.Int8Type, 0);
+        var ptrType = LLVMTypeRef.CreatePointer(ctx.Context.Int8Type, 0);
         int count = vTable.Slots.Count;
         var vtableArrayType = LLVMTypeRef.CreateArray(ptrType, (uint)count);
-        var vtableGlobal = _ctx.Module.AddGlobal(vtableArrayType, NameMangler.GenerateVTable(_ctx.ModuleContext.Name, className));
+        var vtableGlobal = ctx.Module.AddGlobal(vtableArrayType, NameMangler.GenerateVTable(ctx.ModuleContext.Name, className));
         vtableGlobal.IsGlobalConstant = true;
         vtableGlobal.Linkage = LLVMLinkage.LLVMInternalLinkage;
         if (count > 0)
@@ -84,11 +89,11 @@ public static class VTableBuilder
                 var fn = slot.Method.FunctionValue;
                 if (fn.Handle == IntPtr.Zero)
                 {
-                    string symbol = NameMangler.GenerateMethodName(_ctx.ModuleContext.Name, className, slot.MethodName);
-                    fn = _ctx.Module.GetNamedFunction(symbol);
+                    string symbol = NameMangler.GenerateMethodName(ctx.ModuleContext.Name, className, slot.MethodName);
+                    fn = ctx.Module.GetNamedFunction(symbol);
                     if (fn.Handle == IntPtr.Zero)
                     {
-                        fn = _ctx.Module.AddFunction(symbol, slot.Method.Signature.Type);
+                        fn = ctx.Module.AddFunction(symbol, slot.Method.Signature.Type);
                     }
                 }
                 fnPtrs[i] = fn;

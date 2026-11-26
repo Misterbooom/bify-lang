@@ -41,7 +41,7 @@ public class DeclarationDispatcher(CodeGenContext ctx) : CodeGenBase(ctx)
                 new StructGen(_ctx).EmitStruct(astStruct);
                 break;
             default:
-                Fail("Only function and class declarations are allowed at the top level", DiagnosticKind.Syntax, node);
+                Fail("expected top-level declaration", DiagnosticKind.SYNTAX, node);
                 break;
         }
     }

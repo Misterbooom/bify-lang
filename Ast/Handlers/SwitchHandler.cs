@@ -25,7 +25,7 @@ internal class SwitchHandler(AstBuilder builder) : TokenHandler(builder)
         }
         if (bodyTokens == null)
         {
-            Builder.Fail("Switch body not found.", DiagnosticKind.Syntax, Builder.PeekTokenOrNull() ?? token);
+            Builder.Fail("Switch body not found.", DiagnosticKind.SYNTAX, Builder.PeekTokenOrNull() ?? token);
             return;
         }
 
@@ -69,7 +69,7 @@ internal class SwitchHandler(AstBuilder builder) : TokenHandler(builder)
                 AstNode? valueNode = valueTokens.Count > 0 ? Builder.ParseTokens(valueTokens) : null;
                 if (valueNode == null)
                 {
-                    Builder.Fail("Expected expression after 'case'.", DiagnosticKind.Syntax, caseToken);
+                    Builder.Fail("Expected expression after 'case'.", DiagnosticKind.SYNTAX, caseToken);
                     return;
                 }
 

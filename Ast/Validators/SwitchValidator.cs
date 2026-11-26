@@ -10,27 +10,27 @@ internal static class SwitchValidator
     {
         if (astSwitch.ExpressionNode == null)
         {
-            builder.Fail(ErrorMessage.ConditionIsRequiredInSwitch(), DiagnosticKind.Syntax, astSwitch.Token);
+            builder.Fail(ErrorMessage.ConditionIsRequiredInSwitch(), DiagnosticKind.SYNTAX, astSwitch.Token);
         }
     }
 
     public static void ThrowExpectedColonAfterCase(AstBuilder builder, Token token)
     {
-        builder.Fail(ErrorMessage.ExpectedColonAfterCase(), DiagnosticKind.Syntax, token);
+        builder.Fail(ErrorMessage.ExpectedColonAfterCase(), DiagnosticKind.SYNTAX, token);
     }
 
     public static void ThrowExpectedColonAfterDefault(AstBuilder builder, Token token)
     {
-        builder.Fail(ErrorMessage.ExpectedColonAfterDefault(), DiagnosticKind.Syntax, token);
+        builder.Fail(ErrorMessage.ExpectedColonAfterDefault(), DiagnosticKind.SYNTAX, token);
     }
 
     public static void ThrowMultipleDefaultError(AstBuilder builder, Token token)
     {
-        builder.Fail(ErrorMessage.MultipleDefaultInSwitch(), DiagnosticKind.Syntax, token);
+        builder.Fail(ErrorMessage.MultipleDefaultInSwitch(), DiagnosticKind.SYNTAX, token);
     }
 
     public static void ThrowInvalidSwitchBodyToken(AstBuilder builder, Token token)
     {
-        builder.Fail(ErrorMessage.InvalidSwitchBodyToken(token.Value), DiagnosticKind.Syntax, token);
+        builder.Fail(ErrorMessage.InvalidSwitchBodyToken(token.Value), DiagnosticKind.SYNTAX, token);
     }
 }

@@ -41,7 +41,8 @@ namespace BifyLang.Lexer
             {"val", TokenType.VAL},
             {"mut", TokenType.MUT},
             {"func", TokenType.FUNCTION},
-            {"->", TokenType.ARROW}
+            {"->", TokenType.ARROW},
+            {"struct", TokenType.STRUCT}
         };
 
         public static readonly Dictionary<char, TokenType> SingleCharTokens = new()
@@ -112,26 +113,6 @@ namespace BifyLang.Lexer
             { "**=", TokenType.POWE },
 
         };
-        public static readonly Dictionary<string, TokenType> MultiTokenStatements = new()
-        {
-            { "if", TokenType.IF },
-            { "else", TokenType.ELSE },
-            { "while", TokenType.WHILE },
-            { "for", TokenType.FOR },
-            { "return", TokenType.RETURN },
-            { "function",TokenType.FUNCTIONDECL },
-            { "+=", TokenType.ADDE },
-            { "-=", TokenType.SUBE },
-            { "*=", TokenType.MULE },
-            { "/=", TokenType.DIVE },
-            { "//=", TokenType.FLOORDIVE },
-            { "**=", TokenType.POWE },
-            { "--", TokenType.DECREMENT},
-            { "++",TokenType.INCREMENT},
-            { "identifier", TokenType.IDENTIFIER },
-            { "class", TokenType.CLASS },
-            { "=", TokenType.ASSIGN},
-            { "[",TokenType.LBRACKET },
-        };
+
     }
 }

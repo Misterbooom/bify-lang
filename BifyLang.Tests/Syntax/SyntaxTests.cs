@@ -811,8 +811,8 @@ struct Vector3 : I1, I2 {
     [Test]
     public void Struct_InvalidBodyAndName_ReportsDiagnostics()
     {
-        BifyAssert.ParseError("struct 123 {}", DiagnosticKind.Syntax);
-        BifyAssert.ParseError("struct Bad { func m() {} val x: int; }", DiagnosticKind.Syntax);
-        BifyAssert.ParseError("struct Bad { return 1; }", DiagnosticKind.Syntax);
+        BifyAssert.ParseError("struct 123 {}", DiagnosticKind.SYNTAX);
+        BifyAssert.ParseError("struct Bad { func m() {} val x: int; }", DiagnosticKind.SYNTAX);
+        BifyAssert.ParseError("struct Bad { return 1; }", DiagnosticKind.SYNTAX);
     }
 }

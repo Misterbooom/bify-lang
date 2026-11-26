@@ -18,8 +18,8 @@ internal static class TokenHandlerFactory
             if (TokenConfig.BinaryOperators.ContainsValue(token.Type))
             {
                 return builder.Fail<TokenHandler>(
-                    "Only a assignment, call, increment, decrement and new object expressions can be used as a statement.",
-                    DiagnosticKind.Syntax,
+                    "invalid expression statement",
+                    DiagnosticKind.SYNTAX,
                     token
                 );
             }
@@ -27,16 +27,19 @@ internal static class TokenHandlerFactory
 
         if (builder.IsHandlingLine && builder.TokenIndex == 0 && builder.Nodes.Count == 0)
         {
-            if (token.Type == TokenType.IDENTIFIER && token.Value == "struct")
-            {
-                return new ClassHandler(builder);
-            }
+
 
             if (new DeclarationParser(builder).TryParseDeclaration(out var declarationHeader))
             {
-                if (declarationHeader.Kind == DeclarationKind.Variable)
+                BifyDebug.Log("Declaration kind: " + declarationHeader.Kind);
+                if (declarationHeader.Kind == DeclarationKind.VARIABLE)
                 {
                     return new VariableDeclarationHandler(builder, declarationHeader);
+                }
+                else if (declarationHeader.Kind is (DeclarationKind.CLASS or DeclarationKind.STRUCT))
+                {
+                    BifyDebug.Log("Handling type.");
+                    return new ClassHandler(builder, declarationHeader);
                 }
                 else
                 {
@@ -57,7 +60,6 @@ internal static class TokenHandlerFactory
             TokenType.RETURN => new ReturnHandler(builder),
             TokenType.IF => new ConditionHandler(builder),
             TokenType.SWITCH => new SwitchHandler(builder),
-            TokenType.CLASS => new ClassHandler(builder),
             TokenType.NEW => new NewHandler(builder),
             TokenType.UNSAFE => new UnsafeHandler(builder),
             TokenType.IMPORT => new ImportHandler(builder),

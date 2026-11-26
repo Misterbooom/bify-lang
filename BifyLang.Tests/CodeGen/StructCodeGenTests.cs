@@ -41,7 +41,7 @@ public class StructCodeGenTests : BifyTestBase
         }
         """;
 
-        AssertCompileError(code, DiagnosticKind.Syntax);
+        AssertCompileError(code, DiagnosticKind.SYNTAX);
     }
 
     [Test]
@@ -237,7 +237,7 @@ public class StructCodeGenTests : BifyTestBase
             mut s = new S(x: 1);
             s.x = 2;
         }
-        """, DiagnosticKind.Type);
+        """, DiagnosticKind.TYPE);
 
         // Assigning to mut field on val struct
         AssertCompileError("""
@@ -246,7 +246,7 @@ public class StructCodeGenTests : BifyTestBase
             val s = new S(x: 1);
             s.x = 2;
         }
-        """, DiagnosticKind.Type);
+        """, DiagnosticKind.TYPE);
 
         // Assigning to nested mut field on val outer struct
         AssertCompileError("""
@@ -256,7 +256,7 @@ public class StructCodeGenTests : BifyTestBase
             val o = new Outer(inner: new Inner(x: 1));
             o.inner.x = 2;
         }
-        """, DiagnosticKind.Type);
+        """, DiagnosticKind.TYPE);
 
         // Assigning to rvalue struct field
         AssertCompileError("""
@@ -265,7 +265,7 @@ public class StructCodeGenTests : BifyTestBase
         func test() {
             make().x = 2;
         }
-        """, DiagnosticKind.Type);
+        """, DiagnosticKind.TYPE);
 
         // Private field access on rvalue struct
         AssertCompileError("""
@@ -274,7 +274,7 @@ public class StructCodeGenTests : BifyTestBase
         func test() -> int {
             return make().secret;
         }
-        """, DiagnosticKind.Attribute);
+        """, DiagnosticKind.ATTRIBUTE);
 
         // Weak flag on struct variable
         AssertCompileError("""
@@ -283,6 +283,6 @@ public class StructCodeGenTests : BifyTestBase
             val s = new S(x: 1);
             weak mut w: S = s;
         }
-        """, DiagnosticKind.Type);
+        """, DiagnosticKind.TYPE);
     }
 }

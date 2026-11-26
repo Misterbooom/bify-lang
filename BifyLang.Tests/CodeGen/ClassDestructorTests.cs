@@ -103,13 +103,13 @@ public class ClassDestructorTests : BifyTestBase
 
     [Test]
     public void ClassDestructor_MultipleDestructors_Throws() =>
-        AssertCompileError("class A { destructor() {} destructor() {} } func main() {}", DiagnosticKind.Name);
+        AssertCompileError("class A { destructor() {} destructor() {} } func main() {}", DiagnosticKind.NAME);
 
     [Test]
     public void ClassDestructor_WithParameters_Throws() =>
-        AssertCompileError("class A { destructor(x: int) {} } func main() {}", DiagnosticKind.Syntax);
+        AssertCompileError("class A { destructor(x: int) {} } func main() {}", DiagnosticKind.SYNTAX);
 
     [Test]
     public void ClassDestructor_FieldNamedDestructor_Throws() =>
-        AssertCompileError("class A { public val destructor: int; } func main() {}", DiagnosticKind.Syntax);
+        AssertCompileError("class A { public val destructor: int; } func main() {}", DiagnosticKind.SYNTAX);
 }

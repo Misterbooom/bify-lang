@@ -11,7 +11,7 @@ namespace BifyLang.Ast.Validators
         {
             if (astWhile.ConditionNode == null)
             {
-                builder.Fail(ErrorMessage.ConditionIsRequired(), DiagnosticKind.Syntax, astWhile.Token);
+                builder.Fail(ErrorMessage.ConditionIsRequired(), DiagnosticKind.SYNTAX, astWhile.Token);
             }
         }
 
@@ -19,7 +19,7 @@ namespace BifyLang.Ast.Validators
         {
             if (splitedTokens.Count != 3)
             {
-                builder.Fail(ErrorMessage.InvalidForLoopStructure(), DiagnosticKind.Syntax, astFor.Token);
+                builder.Fail(ErrorMessage.InvalidForLoopStructure(), DiagnosticKind.SYNTAX, astFor.Token);
             }
 
             ValidateTokens(builder, splitedTokens[0], ErrorMessage.InitStatementIsRequired(), astFor.Token);
@@ -32,7 +32,7 @@ namespace BifyLang.Ast.Validators
 
             if (astFor.BlockNode == null)
             {
-                builder.Fail(ErrorMessage.InvalidForLoopStructure(), DiagnosticKind.Syntax, astFor.Token);
+                builder.Fail(ErrorMessage.InvalidForLoopStructure(), DiagnosticKind.SYNTAX, astFor.Token);
             }
         }
 
@@ -40,7 +40,7 @@ namespace BifyLang.Ast.Validators
         {
             if (tokens.Count == 0)
             {
-                builder.Fail(errorMessage, DiagnosticKind.Syntax, token);
+                builder.Fail(errorMessage, DiagnosticKind.SYNTAX, token);
             }
         }
 
@@ -48,11 +48,11 @@ namespace BifyLang.Ast.Validators
         {
             if (node == null)
             {
-                builder.Fail(nullError, DiagnosticKind.Syntax, token);
+                builder.Fail(nullError, DiagnosticKind.SYNTAX, token);
             }
             else if (!isValid(node))
             {
-                builder.Fail(typeError, DiagnosticKind.Syntax, node.Token ?? token);
+                builder.Fail(typeError, DiagnosticKind.SYNTAX, node.Token ?? token);
             }
         }
 

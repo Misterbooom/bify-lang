@@ -11,4 +11,5 @@ public class StructType(string name, string fullName, LLVMTypeRef structType, st
     public string ModuleName { get; } = moduleName;
     public Dictionary<string, ClassField> Fields { get; } = new();
     public Dictionary<string, ClassMethod> Methods { get; } = new();
+    public TypeFlags Flags { get; init; }
 }

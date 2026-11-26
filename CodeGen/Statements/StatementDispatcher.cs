@@ -88,7 +88,7 @@ public class StatementDispatcher(CodeGenContext ctx) : CodeGenBase(ctx)
                 new SwitchGen(_ctx).EmitSwitch(astSwitch);
                 break;
             default:
-                Fail("Invalid statement.", DiagnosticKind.Syntax, node);
+                Fail("invalid statement", DiagnosticKind.SYNTAX, node);
                 break;
         }
     }

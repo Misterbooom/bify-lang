@@ -7,7 +7,7 @@ using BifyLang.Lexer;
 
 namespace BifyLang.CodeGen.Core.Types.Service;
 
-public class TypeResolver
+public static class TypeResolver
 {
     public static BifyType Resolve(AstNode? typeNode, CodeGenContext ctx)
     {
@@ -23,10 +23,17 @@ public class TypeResolver
             BifyDebug.Log(ctx.TypeRegistry.ToString());
             if (ctx.TypeRegistry.TryGetType(NameMangler.GenerateTypeName(ctx.ModuleContext.Name, id.Name), out type))
             {
+                if (IsPrivateType(type, ctx))
+                {
+                    return ctx.Fail<BifyType>(
+                        $"cannot access private type '{type.Name}' in module '{((ICompositeType)type).ModuleName}'",
+                        DiagnosticKind.ACCESS_VIOLATION,
+                        typeNode);
+                }
                 return type;
             }
             BifyDebug.Log(NameMangler.GenerateTypeName(ctx.ModuleContext.Name, id.Name));
-            return ctx.Fail<BifyType>("Cannot resolve type " + id.Name, DiagnosticKind.Name, typeNode);
+            return ctx.Fail<BifyType>($"unknown type '{id.Name}'", DiagnosticKind.NAME, typeNode);
         }
         return typeNode switch
         {
@@ -35,7 +42,7 @@ public class TypeResolver
             //     ResolvePointer(unary, ctx),
             // AstIndexOperator indexOp =>
             //     ResolveArray(indexOp, ctx),
-            _ => ctx.Fail<BifyType>($"{typeNode.GetType()} is not a known type.", DiagnosticKind.Unknown, typeNode)
+            _ => ctx.Fail<BifyType>($"invalid type '{typeNode.Token.Value}'", DiagnosticKind.UNKNOWN, typeNode)
         };
     }
 
@@ -45,12 +52,25 @@ public class TypeResolver
         {
             string mangled = NameMangler.GenerateTypeName(modId.Name, typeId.Name);
             if (ctx.TypeRegistry.TryGetType(mangled, out var type))
+            {
+                if (IsPrivateType(type, ctx))
+                {
+                    return ctx.Fail<BifyType>(
+                        $"cannot access private type '{type.Name}' in module '{((ICompositeType)type).ModuleName}'",
+                        DiagnosticKind.ACCESS_VIOLATION,
+                        memberAccess);
+                }
                 return type;
-            return ctx.Fail<BifyType>($"Cannot resolve type '{modId.Name}.{typeId.Name}'.", DiagnosticKind.Name, memberAccess);
+            }
+            return ctx.Fail<BifyType>($"unknown type '{modId.Name}.{typeId.Name}'", DiagnosticKind.NAME, memberAccess);
         }
-        return ctx.Fail<BifyType>("Invalid type expression.", DiagnosticKind.Unknown, memberAccess);
+        return ctx.Fail<BifyType>("invalid type expression", DiagnosticKind.UNKNOWN, memberAccess);
     }
 
+    private static bool IsPrivateType(BifyType type, CodeGenContext ctx) =>
+        type is ICompositeType compositeType &&
+        !compositeType.Flags.HasFlag(TypeFlags.PUBLIC) &&
+        ctx.ModuleContext.Name != compositeType.ModuleName;
     // private static BifyType ResolvePointer(AstUnaryOperator unary, CodeGenContext ctx)
     // {
     //     var baseType = Resolve(unary.Operand, ctx);

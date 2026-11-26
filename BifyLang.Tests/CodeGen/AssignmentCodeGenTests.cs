@@ -21,14 +21,14 @@ public class AssignmentCodeGenTests : BifyTestBase
     [Test]
     public void Assign_AssignToConstThrows()
     {
-        AssertCompileError("func test() { val c: int = 42; c = 100; }", DiagnosticKind.Type);
+        AssertCompileError("func test() { val c: int = 42; c = 100; }", DiagnosticKind.TYPE);
     }
 
     [Test]
     public void Assign_AssignToValParameterThrows()
     {
-        AssertCompileError("func test(a: int) { a = 10; }", DiagnosticKind.Type);
-        AssertCompileError("func test(val a: int) { a = 10; }", DiagnosticKind.Type);
+        AssertCompileError("func test(a: int) { a = 10; }", DiagnosticKind.TYPE);
+        AssertCompileError("func test(val a: int) { a = 10; }", DiagnosticKind.TYPE);
     }
 
     [Test]
@@ -40,12 +40,12 @@ public class AssignmentCodeGenTests : BifyTestBase
     [Test]
     public void Assign_AssignToUndefinedThrows()
     {
-        AssertCompileError("func test() { missingVariable = 10; }", DiagnosticKind.Name);
+        AssertCompileError("func test() { missingVariable = 10; }", DiagnosticKind.NAME);
     }
 
     [Test]
     public void Assign_IncompatibleTypeThrows()
     {
-        AssertCompileError("func test() { mut x: int = 10; x = \"cannot assign string to int\"; }", DiagnosticKind.Type);
+        AssertCompileError("func test() { mut x: int = 10; x = \"cannot assign string to int\"; }", DiagnosticKind.TYPE);
     }
 }

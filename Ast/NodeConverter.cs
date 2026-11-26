@@ -23,7 +23,7 @@ namespace BifyLang.Ast
                             {
                                 return builder.Fail<AstNode>(
                                     $"Token value '{token.Value}' exceeds the maximum allowable value for a float.",
-                                    DiagnosticKind.Overflow,
+                                    DiagnosticKind.OVERFLOW,
                                     token
                                 );
                             }
@@ -31,7 +31,7 @@ namespace BifyLang.Ast
                         }
                         return builder.Fail<AstNode>(
                             $"Token value '{token.Value}' is not a valid float.",
-                            DiagnosticKind.Overflow,
+                            DiagnosticKind.OVERFLOW,
                             token
                         );
                     }
@@ -43,7 +43,7 @@ namespace BifyLang.Ast
                         }
                         return builder.Fail<AstNode>(
                             $"Token value '{token.Value}' is not a valid integer.",
-                            DiagnosticKind.Overflow,
+                            DiagnosticKind.OVERFLOW,
                             token
                         );
                     }

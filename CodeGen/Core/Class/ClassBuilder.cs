@@ -20,15 +20,13 @@ public class ClassBuilder(CodeGenContext ctx) : CodeGenBase(ctx)
 
     private unsafe LLVMValueRef BuildClassInstance(ClassType classType)
     {
-        var ptrType = LLVMTypeRef.CreatePointer(_ctx.Context.Int8Type, 0);
         var vtableGlobal = classType.VTableGlobal.Handle != IntPtr.Zero
             ? classType.VTableGlobal
             : classType.VTable.GlobalValue;
 
-        var vptrCast = _ctx.Builder.BuildBitCast(vtableGlobal, ptrType, "vptr_cast");
         var sizeVal = LLVM.SizeOf(classType.StructType);
-        var rawPtr = _ctx.HeapControl.BuildAlloc(sizeVal, vptrCast);
-        return _ctx.Builder.BuildBitCast(rawPtr, classType.Type, $"{classType.Name}_inst");
+        var rawPtr = _ctx.HeapControl.BuildAlloc(sizeVal, vtableGlobal);
+        return rawPtr;
     }
 
     private LLVMValueRef BuildStructInstance(StructType structType)

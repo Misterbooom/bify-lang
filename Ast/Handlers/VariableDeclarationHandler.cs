@@ -26,12 +26,12 @@ namespace BifyLang.Ast.Handlers
                     valueTokens = Builder.Tokens[Builder.TokenIndex..];
                     if (valueTokens.Count == 0)
                     {
-                        Builder.Fail(ErrorMessage.EmptyValueAssigned(), DiagnosticKind.Syntax, assignToken);
+                        Builder.Fail(ErrorMessage.EmptyValueAssigned(), DiagnosticKind.SYNTAX, assignToken);
                     }
                     valueNode = Builder.ParseTokens(valueTokens);
                     if (valueNode == null)
                     {
-                        Builder.Fail(ErrorMessage.EmptyValueAssigned(), DiagnosticKind.Syntax, assignToken);
+                        Builder.Fail(ErrorMessage.EmptyValueAssigned(), DiagnosticKind.SYNTAX, assignToken);
                     }
                     if (valueNode.IsPoison)
                     {

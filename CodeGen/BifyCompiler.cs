@@ -50,6 +50,7 @@ public class BifyCompiler
         var ctx = new CodeGenContext(initialDiagnostics);
         try
         {
+
             var module = ctx.GenerateModule(moduleNode);
             if (ctx.Diagnostics.HasErrors)
             {
@@ -73,6 +74,14 @@ public class BifyCompiler
         catch (BifyCompilationException)
         {
             ErrorFormatter.PrintDiagnostics(ctx.Diagnostics);
+        }
+        catch (Exception)
+        {
+            if (ctx.Diagnostics.HasErrors)
+            {
+                ErrorFormatter.PrintDiagnostics(ctx.Diagnostics);
+            }
+            throw;
         }
     }
 
@@ -106,14 +115,14 @@ public class BifyCompiler
             if (fn.Name == "main" || (parts.Length == 2 && parts[1] == "main"))
             {
                 if (userMain.Handle != IntPtr.Zero)
-                    ctx.Fail($"Duplicate main function name: {fn.Name}", DiagnosticKind.Name);
+                    ctx.Fail($"duplicate 'main' function '{fn.Name}'", DiagnosticKind.NAME);
 
                 userMain = fn;
             }
         }
 
         if (userMain.Handle == IntPtr.Zero)
-            ctx.Fail("Main function not found.", DiagnosticKind.Name);
+            ctx.Fail("missing 'main' function", DiagnosticKind.NAME);
 
         return userMain;
     }

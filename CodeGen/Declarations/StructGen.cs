@@ -28,7 +28,7 @@ public class StructGen(CodeGenContext ctx) : CodeGenBase(ctx)
 
             try
             {
-                methodEmitter.EmitMethod(method);
+                methodEmitter.EmitMethod(method, structNode.NameNode);
             }
             catch (BifyCompilationException)
             {

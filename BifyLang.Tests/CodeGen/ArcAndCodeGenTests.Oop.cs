@@ -131,7 +131,7 @@ public partial class ArcAndCodeGenTests
             val d: Dummy = (Dummy)l;
         }
         """;
-        AssertCompileError(code, DiagnosticKind.Cast);
+        AssertCompileError(code, DiagnosticKind.CAST);
     }
 
     [Test]

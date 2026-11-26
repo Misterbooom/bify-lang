@@ -55,7 +55,7 @@ public static class ArgumentResolver
                     ? $"{expected}"
                     : $"{minRequired} to {expected}";
 
-            ctx.Fail($"{targetLabel} expects {expectedText} argument(s), got {provided}", DiagnosticKind.Type, callSite);
+            ctx.Fail($"expected {expectedText} argument(s) for {targetLabel.ToLowerInvariant()}, found {provided}", DiagnosticKind.TYPE, callSite);
         }
     }
 
@@ -96,7 +96,7 @@ public static class ArgumentResolver
             if (arg.isPositional)
             {
                 if (seenNamed)
-                    ctx.Fail("Positional argument cannot follow a named argument.", DiagnosticKind.Syntax, node);
+                    ctx.Fail("positional argument after named argument", DiagnosticKind.SYNTAX, node);
 
                 if (arg.Position >= parameters.Count)
                 {
@@ -111,10 +111,10 @@ public static class ArgumentResolver
             seenNamed = true;
             int index = FindParameterIndex(parameters, arg.Name);
             if (index < 0)
-                ctx.Fail($"Unknown parameter '{arg.Name}'.", DiagnosticKind.Name, node);
+                ctx.Fail($"unknown parameter '{arg.Name}'", DiagnosticKind.NAME, node);
 
             if (bound[index] != null)
-                ctx.Fail($"Argument for parameter '{arg.Name}' is specified more than once.", DiagnosticKind.Type, node);
+                ctx.Fail($"duplicate argument '{arg.Name}'", DiagnosticKind.TYPE, node);
 
             bound[index] = CastArgument(ctx, arg, parameters[index], node);
         }
@@ -139,7 +139,7 @@ public static class ArgumentResolver
             {
                 if (parameters[i].Value == null)
                 {
-                    ctx.Fail($"Missing argument for parameter '{parameters[i].Name}'.", DiagnosticKind.Type, callSite);
+                    ctx.Fail($"missing argument '{parameters[i].Name}'", DiagnosticKind.TYPE, callSite);
                     continue;
                 }
 
@@ -166,8 +166,8 @@ public static class ArgumentResolver
     private static ArgumentInfo CastArgument(CodeGenContext ctx, ArgumentInfo arg, ParameterInfo param, AstNode node)
     {
         if (!TypeCaster.CanImplicitCast(arg.Value.Type, param.Type))
-            ctx.Fail($"Argument '{param.Name}' expects type '{param.Type}', but got '{arg.Value.Type}'",
-                DiagnosticKind.Type, node);
+            ctx.Fail($"expected type '{param.Type.Name}' for '{param.Name}', found '{arg.Value.Type.Name}'",
+                DiagnosticKind.TYPE, node);
 
         var castVal = TypeCaster.ImplicitCast(ctx, arg.Value, param.Type);
         return arg with { Value = castVal };

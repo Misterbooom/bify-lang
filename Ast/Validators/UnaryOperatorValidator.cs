@@ -9,11 +9,11 @@ namespace BifyLang.Ast.Validators
         {
             if (identifierToken == null)
             {
-                builder.Fail(ErrorMessage.MissingOperandAfterUnaryOperator(op), DiagnosticKind.Syntax, null);
+                builder.Fail(ErrorMessage.MissingOperandAfterUnaryOperator(op), DiagnosticKind.SYNTAX, null);
             }
             else if (identifierToken.Type != TokenType.IDENTIFIER)
             {
-                builder.Fail(ErrorMessage.OperandMustBeIdentifierAfterUnaryOperator(op), DiagnosticKind.Syntax, identifierToken);
+                builder.Fail(ErrorMessage.OperandMustBeIdentifierAfterUnaryOperator(op), DiagnosticKind.SYNTAX, identifierToken);
             }
             return true;
         }

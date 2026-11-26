@@ -104,25 +104,25 @@ public class NamedArgumentsTests : BifyTestBase
     public void NamedArgument_UnknownName_Fails() =>
         AssertCompileError(
             "func foo(a: int) {} func test() { foo(z: 1); }",
-            DiagnosticKind.Name);
+            DiagnosticKind.NAME);
 
     [Test]
     public void NamedArgument_DuplicateName_Fails() =>
         AssertCompileError(
             "func foo(a: int, b: int) {} func test() { foo(a: 1, a: 2); }",
-            DiagnosticKind.Type);
+            DiagnosticKind.TYPE);
 
     [Test]
     public void NamedArgument_ConflictsWithPositional_Fails() =>
         AssertCompileError(
             "func foo(a: int, b: int) {} func test() { foo(1, a: 2); }",
-            DiagnosticKind.Type);
+            DiagnosticKind.TYPE);
 
     [Test]
     public void NamedArgument_PositionalAfterNamed_Fails() =>
         AssertCompileError(
             "func foo(a: int, b: int) {} func test() { foo(a: 1, 2); }",
-            DiagnosticKind.Syntax);
+            DiagnosticKind.SYNTAX);
 
     [Test]
     public void Constructor_UnknownNamedArgument_Fails() =>
@@ -133,7 +133,7 @@ public class NamedArgumentsTests : BifyTestBase
         func test() {
             val p: Point = new Point(y: 1);
         }
-        """, DiagnosticKind.Name);
+        """, DiagnosticKind.NAME);
 
     [Test]
     public void Constructor_IncompatibleNamedArgumentType_Fails() =>
@@ -144,5 +144,5 @@ public class NamedArgumentsTests : BifyTestBase
         func test() {
             val p: Point = new Point(x: "bad");
         }
-        """, DiagnosticKind.Type);
+        """, DiagnosticKind.TYPE);
 }

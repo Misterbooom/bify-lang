@@ -14,7 +14,7 @@ public readonly struct Symbol(
     BifyType type,
     bool isConstant = false,
     bool isWeak = false,
-    bool isPoison = false)
+    bool isPoison = false, AccessLevel accessLevel = AccessLevel.PRIVATE)
 {
     public string Name { get; } = name;
     public LLVMValueRef Pointer { get; } = pointer;
@@ -22,6 +22,8 @@ public readonly struct Symbol(
     public bool IsConstant { get; } = isConstant;
     public bool IsWeak { get; } = isWeak;
     public bool IsPoison { get; } = isPoison;
+    public AccessLevel AccessLevel { get; } = accessLevel;
+
 }
 
 public class Scope(Scope? parent = null)
@@ -33,14 +35,14 @@ public class Scope(Scope? parent = null)
 
     private readonly Dictionary<string, Symbol> _symbols = new();
 
-    public bool Define(string name, LLVMValueRef pointer, BifyType type, bool isConstant = false, bool isWeak = false)
+    public bool Define(string name, LLVMValueRef pointer, BifyType type, bool isConstant = false, bool isWeak = false, AccessLevel accessLevel = AccessLevel.PRIVATE)
     {
         if (_symbols.ContainsKey(name))
         {
             return false;
         }
 
-        _symbols[name] = new Symbol(name, pointer, type, isConstant, isWeak);
+        _symbols[name] = new Symbol(name, pointer, type, isConstant, isWeak,accessLevel: accessLevel);
         return true;
     }
 

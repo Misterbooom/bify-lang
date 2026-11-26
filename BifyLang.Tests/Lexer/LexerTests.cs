@@ -134,7 +134,7 @@ public class LexerTests : BifyTestBase
         var tokens = Bify.Lex(code, diagnostics, "lexer_test.bf");
 
         Assert.That(diagnostics.Diagnostics.Count, Is.EqualTo(3));
-        Assert.That(diagnostics.Diagnostics.All(d => d.Kind == DiagnosticKind.Syntax), Is.True);
+        Assert.That(diagnostics.Diagnostics.All(d => d.Kind == DiagnosticKind.SYNTAX), Is.True);
         Assert.That(diagnostics.Diagnostics.All(d => d.Location.FilePath == "lexer_test.bf"), Is.True);
 
         Assert.That(diagnostics.Diagnostics[0].Location.LineNumber, Is.EqualTo(1));

@@ -19,36 +19,18 @@ public static class ClassMemberCollector
     public static ClassField CollectField(AstVarDecl varDecl, CodeGenContext ctx, ICompositeType classType, int index)
     {
         string name = varDecl.AssignmentNode.Left.Token.Value;
-        var flags = varDecl.Flag?.Flags?.Select(f => f.Token.Value) ?? [];
-
-        if (classType is StructType)
-        {
-            if (!FlagChecker.CheckStructAttributeFlags(flags, out var error))
-                ctx.Fail(error ?? "Invalid attribute flags.", DiagnosticKind.Attribute, varDecl);
-        }
-        else if (classType is ClassType)
-        {
-            if (!FlagChecker.CheckAttributeFlags(flags, out var error))
-                ctx.Fail(error ?? "Invalid attribute flags.", DiagnosticKind.Attribute, varDecl);
-        }
+        if (!FlagChecker.ParseFieldFlags(varDecl.Flag, classType is StructType, out var accessLevel, out var fieldFlags, out var error))
+            ctx.Fail(error ?? "invalid field flags", DiagnosticKind.ATTRIBUTE, varDecl);
 
         if (varDecl.Type is AstIdentifier id && id.Name == "void")
-        {
-            ctx.Fail("Fields must have an explicit type.", DiagnosticKind.Type, varDecl);
-        }
+            ctx.Fail("field requires explicit type", DiagnosticKind.TYPE, varDecl);
 
-        bool isWeak = varDecl.Flag?.HasFlag("weak") ?? false;
-        if (varDecl.AssignmentNode.Right is AstNew && isWeak)
-        {
-            ctx.Fail("Can't use weak flag with new statement.", DiagnosticKind.Type, varDecl);
-        }
+        if (varDecl.AssignmentNode.Right is AstNew && fieldFlags.HasFlag(FieldFlags.WEAK))
+            ctx.Fail("cannot use 'weak' with 'new'", DiagnosticKind.TYPE, varDecl);
 
-        var accessLevel = ParseAccessLevel(varDecl.Flag);
         var type = TypeResolver.Resolve(varDecl.Type, ctx);
-        var value = varDecl.AssignmentNode.Right;
-        bool isConst = varDecl.Flag?.HasFlag("val") ?? false;
-
-        return new ClassField(name, type, value, accessLevel, index, isConst, isWeak, classType);
+        VisibilityChecker.CheckField(ctx, classType, accessLevel, type, varDecl);
+        return new ClassField(name, type, varDecl.AssignmentNode.Right, accessLevel, index, fieldFlags, classType);
     }
 
     public static ClassField CollectFieldOrPoison(AstVarDecl varDecl, CodeGenContext ctx, ICompositeType classType, string name, int index)
@@ -71,25 +53,15 @@ public static class ClassMemberCollector
     public static ClassMethod CollectMethod(AstFunctionDecl funcDecl, CodeGenContext ctx, ICompositeType classType)
     {
         string name = funcDecl.FunctionNameNode.Name;
-        var flags = funcDecl.FlagNode?.Flags.Select(f => f.Token.Value) ?? [];
+        if (!FlagChecker.ParseMethodFlags(funcDecl.FlagNode, classType is StructType, out var accessLevel, out var methodFlags, out var error))
+            ctx.Error(error ?? "invalid method flags", DiagnosticKind.ATTRIBUTE, funcDecl);
 
-        if (classType is StructType)
-        {
-            if (!FlagChecker.CheckStructMethodFlags(flags, out var error))
-                ctx.Fail(error ?? "Invalid method flags.", DiagnosticKind.Attribute, funcDecl);
-        }
-        else if (classType is ClassType)
-        {
-            if (!FlagChecker.CheckMethodFlags(flags, out var error))
-                ctx.Fail(error ?? "Invalid method flags.", DiagnosticKind.Attribute, funcDecl);
-        }
+        if (methodFlags.HasFlag(MethodFlags.ABSTRACT))
+            methodFlags |= MethodFlags.VIRTUAL;
 
-
-    var accessLevel = ParseAccessLevel(funcDecl.FlagNode);
-        bool isVirtual = funcDecl.FlagNode?.HasFlag("virtual") ?? false;
-        bool isOverride = funcDecl.FlagNode?.HasFlag("override") ?? false;
         var parameters = ParameterResolver.Resolve(funcDecl.ArgumentsNode, ctx);
-        var returnType = ResolveMethodReturnType(funcDecl, ctx, name, parameters, ref isVirtual, isOverride);
+        var returnType = ResolveMethodReturnType(funcDecl, ctx, name, parameters, ref methodFlags);
+        VisibilityChecker.CheckMethodSignature(ctx, classType, accessLevel, returnType, parameters, funcDecl);
 
         var paramTypes = new List<LLVMTypeRef> { LLVMTypeRef.CreatePointer(ctx.Context.Int8Type, 0) };
         paramTypes.AddRange(parameters.Select(p => p.Type.Type));
@@ -98,15 +70,20 @@ public static class ClassMemberCollector
         var signature = new CallableType(name, mangledName, [..parameters], returnType, funcType, true);
         var functionValue = ctx.Module.AddFunction(mangledName, funcType);
 
-        return new ClassMethod(name, signature, functionValue, accessLevel, -1, classType, funcDecl.BlockNode, isVirtual, isOverride, parameters);
+        if (methodFlags.HasFlag(MethodFlags.ABSTRACT) && !classType.Flags.HasFlag(TypeFlags.ABSTRACT))
+        {
+            ctx.Error("abstract method in non-abstract class", DiagnosticKind.TYPE, funcDecl.FlagNode!.Flags.First(i => i.Token.Value == "abstract"));
+        }
+
+        return new ClassMethod(name, signature, functionValue, accessLevel, -1, classType, funcDecl.BlockNode, methodFlags, parameters);
     }
 
     public static ClassMethod CreatePoisonMethod(CodeGenContext ctx, string name, ICompositeType classType)
     {
         var voidType = BifyType.CreateVoid(ctx);
         var fnType = LLVMTypeRef.CreateFunction(voidType.Type, [], false);
-        var sig = new CallableType(name, name, [], voidType, fnType, true);
-        return new ClassMethod(name, sig, default, AccessLevel.PUBLIC, -1, classType, isPoison: true);
+        var type = new CallableType(name, name, [], voidType, fnType, true);
+        return new ClassMethod(name, type, default, AccessLevel.PUBLIC, -1, classType, isPoison: true);
     }
 
     public static ClassMethod CollectDestructorOrDefault(AstFunctionDecl? dtorNode, CodeGenContext ctx, ClassType classType)
@@ -129,13 +106,16 @@ public static class ClassMemberCollector
         CodeGenContext ctx,
         string name,
         List<ParameterInfo> parameters,
-        ref bool isVirtual,
-        bool isOverride)
+        ref MethodFlags methodFlags)
     {
         if (name == "constructor")
         {
-            if (isVirtual || isOverride)
-                ctx.Fail("Constructor cannot be marked 'virtual' or 'override'.", DiagnosticKind.Type, funcDecl);
+            if (methodFlags.HasFlag(MethodFlags.VIRTUAL) ||
+                methodFlags.HasFlag(MethodFlags.OVERRIDE) ||
+                methodFlags.HasFlag(MethodFlags.ABSTRACT))
+            {
+                ctx.Fail("constructor cannot be 'virtual', 'override', or 'abstract'", DiagnosticKind.TYPE, funcDecl);
+            }
 
             return BifyType.CreateVoid(ctx);
         }
@@ -143,23 +123,14 @@ public static class ClassMemberCollector
         if (name == "destructor")
         {
             if (parameters.Count > 0)
-                ctx.Fail("Destructor cannot have parameters.", DiagnosticKind.Syntax, funcDecl);
+                ctx.Fail("destructor cannot take parameters", DiagnosticKind.SYNTAX, funcDecl);
 
-            isVirtual = true;
+            methodFlags |= MethodFlags.VIRTUAL;
             return BifyType.CreateVoid(ctx);
         }
 
         return TypeResolver.Resolve(funcDecl.TypeNode, ctx);
     }
-
-    private static AccessLevel ParseAccessLevel(AstFlag? flag)
-    {
-        if (flag == null)
-            return AccessLevel.PUBLIC;
-        if (flag.HasFlag("private"))
-            return AccessLevel.PRIVATE;
-        if (flag.HasFlag("protected"))
-            return AccessLevel.PROTECTED;
-        return AccessLevel.PUBLIC;
-    }
 }
+
+

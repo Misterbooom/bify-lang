@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using BifyLang.Exceptions;
 using BifyLang.Lexer;
@@ -8,6 +9,17 @@ namespace BifyLang.Ast;
 internal class DeclarationParser(AstBuilder builder)
 {
     private readonly AstBuilder _builder = builder;
+
+    private static Dictionary<TokenType, DeclarationKind> _kindMap = new()
+    {
+        { TokenType.VAL, DeclarationKind.VARIABLE },
+        { TokenType.MUT, DeclarationKind.VARIABLE },
+        { TokenType.FUNCTION, DeclarationKind.FUNCTION },
+        { TokenType.CLASS, DeclarationKind.CLASS },
+        { TokenType.STRUCT, DeclarationKind.STRUCT },
+        {TokenType.CONSTRUCTOR, DeclarationKind.FUNCTION},
+        {TokenType.DESTRUCTOR, DeclarationKind.FUNCTION},
+    };
 
     public bool TryParseDeclaration(out DeclarationHeader header)
     {
@@ -28,21 +40,29 @@ internal class DeclarationParser(AstBuilder builder)
         if (keyToken.Type is TokenType.CONSTRUCTOR or TokenType.DESTRUCTOR)
             return TryBuildCtorOrDtor(tokens, i, keyToken, flags, out header);
 
-        DeclarationKind kind = keyToken.Type is TokenType.MUT or TokenType.VAL
-            ? DeclarationKind.Variable
-            : DeclarationKind.Function;
-
-        if (kind == DeclarationKind.Variable)
+        DeclarationKind kind = _kindMap[keyToken.Type];
+        BifyDebug.Log("Find kind: "  + kind);
+        if (kind == DeclarationKind.VARIABLE)
         {
             flags.Add(new AstIdentifier(keyToken, keyToken.Value));
         }
 
         AstIdentifier nameNode = ParseName(tokens, ref i);
-
-        AstNode typeNode = kind == DeclarationKind.Variable
-            ? ParseVariableType(tokens, ref i, keyToken, out int endIndex, out int bodyStartIndex)
-            : ParseFunctionType(tokens, ref i, keyToken, out endIndex, out bodyStartIndex);
-
+        // AstNode typeNode = kind == DeclarationKind.Variable
+        //     ?
+        //     : ;
+        int endIndex;
+        int bodyStartIndex;
+        AstNode typeNode = kind switch
+        {
+            DeclarationKind.VARIABLE => ParseVariableType(tokens, ref i, keyToken, out endIndex,
+                out bodyStartIndex),
+            DeclarationKind.FUNCTION => ParseFunctionType(tokens, ref i, keyToken, out endIndex,
+                out  bodyStartIndex),
+            DeclarationKind.CLASS or DeclarationKind.STRUCT => ParseParent(tokens, ref i, keyToken, out endIndex,
+                out  bodyStartIndex),
+            _ => throw new InvalidOperationException("Unexpected declaration kind."),
+        };
         header = new DeclarationHeader
         {
             Kind = kind,
@@ -59,11 +79,12 @@ internal class DeclarationParser(AstBuilder builder)
     private static List<AstNode> CollectFlags(List<Token> tokens, ref int i)
     {
         List<AstNode> flags = [];
-        while (i < tokens.Count && tokens[i].Type is TokenType.IDENTIFIER or TokenType.CONST)
+        while (i < tokens.Count && tokens[i].Type is TokenType.IDENTIFIER)
         {
             Token flagTok = tokens[i++];
             flags.Add(new AstIdentifier(flagTok, flagTok.Value));
         }
+
         return flags;
     }
 
@@ -71,11 +92,7 @@ internal class DeclarationParser(AstBuilder builder)
         new(flags.Count > 0 ? flags[0].Token : fallbackToken, flags);
 
     private static bool IsDeclarationKeyword(TokenType type) =>
-        type is TokenType.MUT
-            or TokenType.VAL
-            or TokenType.FUNCTION
-            or TokenType.CONSTRUCTOR
-            or TokenType.DESTRUCTOR;
+    _kindMap.ContainsKey(type);
 
     private bool TryBuildCtorOrDtor(
         List<Token> tokens, int i, Token ctorToken, List<AstNode> flags, out DeclarationHeader header)
@@ -83,8 +100,8 @@ internal class DeclarationParser(AstBuilder builder)
         if (i >= tokens.Count || tokens[i].Type != TokenType.LPAREN)
         {
             _builder.Fail(
-                $"Expected '(' after '{ctorToken.Value}'.",
-                DiagnosticKind.Syntax,
+                $"expected '(' after '{ctorToken.Value}'",
+                DiagnosticKind.SYNTAX,
                 i < tokens.Count ? tokens[i] : ctorToken
             );
         }
@@ -92,12 +109,12 @@ internal class DeclarationParser(AstBuilder builder)
         int closeParen = FindClosing(tokens, i, TokenType.LPAREN, TokenType.RPAREN);
         if (closeParen < 0)
         {
-            _builder.Fail($"Expected ')' in '{ctorToken.Value}' declaration.", DiagnosticKind.Syntax, tokens[i]);
+            _builder.Fail($"expected ')' after '{ctorToken.Value}' params", DiagnosticKind.SYNTAX, tokens[i]);
         }
 
         header = new DeclarationHeader
         {
-            Kind = DeclarationKind.Function,
+            Kind = DeclarationKind.FUNCTION,
             FlagNode = CreateFlagNode(flags, ctorToken),
             NameNode = new AstIdentifier(ctorToken, ctorToken.Value),
             TypeNode = CreateVoidType(ctorToken),
@@ -107,7 +124,6 @@ internal class DeclarationParser(AstBuilder builder)
         };
         return true;
     }
-
     private AstIdentifier ParseName(List<Token> tokens, ref int i)
     {
         if (i < tokens.Count && tokens[i].Type == TokenType.IDENTIFIER)
@@ -118,8 +134,8 @@ internal class DeclarationParser(AstBuilder builder)
 
         Token? unexpected = i < tokens.Count ? tokens[i] : null;
         _builder.Error(unexpected is null
-            ? "Expected declaration name, got EOF"
-            : $"Invalid declaration name: '{unexpected.Value}'");
+            ? "expected declaration name"
+            : $"expected identifier, found '{unexpected.Value}'");
 
         Token poison = unexpected ?? new Token(TokenType.POISON, "unknown");
         return new AstIdentifier(poison, string.Empty) { IsPoison = true };
@@ -148,6 +164,22 @@ internal class DeclarationParser(AstBuilder builder)
         return typeNode;
     }
 
+    private AstNode? ParseParent(List<Token> tokens, ref int i, Token fallbackToken, out int endIndex, out int bodyStartIndex)
+    {
+        if (i < tokens.Count && tokens[i].Type == TokenType.COLON)
+        {
+            endIndex = i;
+
+            List<Token> parentTokens = TokensFormatter.GetTokensBetween(tokens, ref i, TokenType.COLON, TokenType.LCUR);
+            AstNode parent = _builder.ParseTokens(parentTokens);
+
+            bodyStartIndex = i;
+            return parent;
+        }
+        endIndex = i;
+        bodyStartIndex = i;
+        return null;
+    }
     private AstNode ParseFunctionType(
         List<Token> tokens, ref int i, Token fallbackToken, out int endIndex, out int bodyStartIndex)
     {
@@ -164,7 +196,7 @@ internal class DeclarationParser(AstBuilder builder)
         {
             _builder.Error(
                 "Expected '(' after function name.",
-                DiagnosticKind.Syntax,
+                DiagnosticKind.SYNTAX,
                 i < tokens.Count ? tokens[i] : fallbackToken
             );
             endIndex = i;
@@ -193,7 +225,7 @@ internal class DeclarationParser(AstBuilder builder)
     {
         if (typeTokens.Count == 0)
         {
-            _builder.Error(emptyMessage, DiagnosticKind.Syntax, anchorToken);
+            _builder.Error(emptyMessage, DiagnosticKind.SYNTAX, anchorToken);
             return new AstPoison(anchorToken);
         }
 
@@ -206,14 +238,14 @@ internal class DeclarationParser(AstBuilder builder)
 
         if (suffixStart == 0)
         {
-            _builder.Error("Invalid type annotation.", DiagnosticKind.Type, typeTokens[0]);
+            _builder.Error("Invalid type annotation.", DiagnosticKind.TYPE, typeTokens[0]);
             return new AstPoison(typeTokens[0]);
         }
 
         AstNode? typeNode = _builder.ParseTokens(typeTokens[..suffixStart]);
         if (typeNode == null)
         {
-            _builder.Error("Invalid type annotation.", DiagnosticKind.Type, typeTokens[0]);
+            _builder.Error("Invalid type annotation.", DiagnosticKind.TYPE, typeTokens[0]);
             return new AstPoison(typeTokens[0]);
         }
 
@@ -232,7 +264,7 @@ internal class DeclarationParser(AstBuilder builder)
                 int closeIdx = FindClosing(typeTokens, idx, TokenType.LBRACKET, TokenType.RBRACKET);
                 if (closeIdx < 0)
                 {
-                    _builder.Error("Expected ']' in array type.", DiagnosticKind.Syntax, tok);
+                    _builder.Error("Expected ']' in array type.", DiagnosticKind.SYNTAX, tok);
                     return new AstPoison(tok);
                 }
 
@@ -243,7 +275,7 @@ internal class DeclarationParser(AstBuilder builder)
             }
             else
             {
-                _builder.Error($"Unexpected token '{tok.Value}' in type annotation.", DiagnosticKind.Type, tok);
+                _builder.Error($"Unexpected token '{tok.Value}' in type annotation.", DiagnosticKind.TYPE, tok);
                 return new AstPoison(tok);
             }
         }
@@ -269,6 +301,7 @@ internal class DeclarationParser(AstBuilder builder)
             if (tokens[i].Type == open) depth++;
             else if (tokens[i].Type == close && --depth == 0) return i;
         }
+
         return -1;
     }
 }

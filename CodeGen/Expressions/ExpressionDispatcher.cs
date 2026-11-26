@@ -30,8 +30,8 @@ public class ExpressionDispatcher(CodeGenContext ctx) : CodeGenBase(ctx)
             AstCall astCall => new CallGen(_ctx).EmitCall(astCall),
             AstNew astNew => new NewGen(_ctx).EmitNew(astNew),
             AstMemberAccess astMemberAccess => new MemberAccessGen(_ctx).EmitMemberAccess(astMemberAccess),
-            
-            _ => Fail<TypedValue>($"'{node.Token.Value}' is not an expression", DiagnosticKind.Syntax, node),
+
+            _ => Fail<TypedValue>($"'{node.Token.Value}' is not an expression", DiagnosticKind.SYNTAX, node),
         };
         if (value.IsReference && node is AstCall or AstNew)
         {

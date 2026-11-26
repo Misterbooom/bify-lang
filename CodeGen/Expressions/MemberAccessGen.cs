@@ -41,7 +41,7 @@ public class MemberAccessGen(CodeGenContext ctx) : CodeGenBase(ctx)
             var loaded = _ctx.Builder.BuildLoad2(field.Type.Type, fieldPtr, field.Name);
             return new TypedValue(loaded, field.Type, field.IsWeak);
         }
-        return Fail<TypedValue>($"Type '{compositeType.Name}' has no member '{memberName}'", DiagnosticKind.Attribute, memberAccess);
+        return Fail<TypedValue>($"no member '{memberName}' in '{compositeType.Name}'", DiagnosticKind.ATTRIBUTE, memberAccess);
     }
 
     private bool TryEmitModuleMember(AstMemberAccess memberAccess, out TypedValue result)
@@ -53,7 +53,7 @@ public class MemberAccessGen(CodeGenContext ctx) : CodeGenBase(ctx)
 
         string memberName = ExpectMemberName(memberAccess);
         if (!moduleType.ModuleContext.CurrentScope.TryLookup(memberName, out var member))
-            return Fail<bool>($"Module '{modId.Name}' has no member '{memberName}'", DiagnosticKind.Attribute, memberAccess);
+            return Fail<bool>($"no member '{memberName}' in module '{modId.Name}'", DiagnosticKind.ATTRIBUTE, memberAccess);
 
         if (member.IsPoison)
             AbortPoison();
@@ -66,7 +66,7 @@ public class MemberAccessGen(CodeGenContext ctx) : CodeGenBase(ctx)
     {
         var target = new ExpressionDispatcher(_ctx).EmitExpression(memberAccess.Left);
         if (target.Type is not ICompositeType compositeType)
-            return Fail<(TypedValue, ICompositeType, string)>($"Cannot access member on non-composite type '{target.Type.Name}'", DiagnosticKind.Type, memberAccess);
+            return Fail<(TypedValue, ICompositeType, string)>($"type '{target.Type.Name}' has no members", DiagnosticKind.TYPE, memberAccess);
 
         string memberName = ExpectMemberName(memberAccess);
         if (target.IsWeak)
@@ -89,5 +89,5 @@ public class MemberAccessGen(CodeGenContext ctx) : CodeGenBase(ctx)
     private string ExpectMemberName(AstMemberAccess memberAccess) =>
         memberAccess.Right is AstIdentifier id
             ? id.Name
-            : Fail<string>("Expected member identifier", DiagnosticKind.Syntax, memberAccess);
+            : Fail<string>("expected member identifier", DiagnosticKind.SYNTAX, memberAccess);
 }

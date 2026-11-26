@@ -149,7 +149,7 @@ namespace BifyLang.Ast
                 string resolvedPath = string.IsNullOrEmpty(filePath) ? "main" : filePath;
                 bag.Fail(
                     ErrorMessage.UnmatchedToken(open.ToString(), close.ToString()),
-                    DiagnosticKind.Syntax,
+                    DiagnosticKind.SYNTAX,
                     new SourceLocation(resolvedPath, lastOpenToken.Line, lastOpenToken.Column)
                 );
             }

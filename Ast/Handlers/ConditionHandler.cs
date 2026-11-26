@@ -18,7 +18,7 @@ namespace BifyLang.Ast.Handlers
             AstNode blockNode = Builder.HandleBody("If");
             if (conditionNode == null)
             {
-                Builder.Fail(ErrorMessage.ConditionIsRequired(), DiagnosticKind.Syntax, token);
+                Builder.Fail(ErrorMessage.ConditionIsRequired(), DiagnosticKind.SYNTAX, token);
             }
             _currentIfNode = new AstIf(token, conditionNode, blockNode);
 
@@ -33,7 +33,7 @@ namespace BifyLang.Ast.Handlers
                 AstNode blockNode = Builder.HandleBody("Else-If");
                 if (conditionNode == null)
                 {
-                    Builder.Fail(ErrorMessage.ConditionIsRequired(), DiagnosticKind.Syntax, token);
+                    Builder.Fail(ErrorMessage.ConditionIsRequired(), DiagnosticKind.SYNTAX, token);
                 }
                 AstElseIf elseIfNode = new AstElseIf(token, blockNode, conditionNode);
                 if (_currentIfNode.ElseNode != null)
@@ -51,7 +51,7 @@ namespace BifyLang.Ast.Handlers
                 {
                     Builder.Fail(
                         "An 'if' statement can only have one 'else'. Remove or merge the extra 'else' block.",
-                        DiagnosticKind.Syntax,
+                        DiagnosticKind.SYNTAX,
                         token
                     );
                 }

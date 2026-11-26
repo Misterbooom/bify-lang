@@ -56,15 +56,15 @@ namespace BifyLang.Ast
             return new SourceLocation(FilePath, t?.Line ?? 0, t?.Column ?? 0);
         }
 
-        public void Error(string msg, DiagnosticKind kind = DiagnosticKind.Syntax, Token? token = null)
+        public void Error(string msg, DiagnosticKind kind = DiagnosticKind.SYNTAX, Token? token = null)
             => Diagnostics.Report(msg, kind, CreateLocation(token));
 
         [DoesNotReturn]
-        public void Fail(string msg, DiagnosticKind kind = DiagnosticKind.Syntax, Token? token = null)
+        public void Fail(string msg, DiagnosticKind kind = DiagnosticKind.SYNTAX, Token? token = null)
             => Diagnostics.Fail(msg, kind, CreateLocation(token));
 
         [DoesNotReturn]
-        public T Fail<T>(string msg, DiagnosticKind kind = DiagnosticKind.Syntax, Token? token = null)
+        public T Fail<T>(string msg, DiagnosticKind kind = DiagnosticKind.SYNTAX, Token? token = null)
             => Diagnostics.Fail<T>(msg, kind, CreateLocation(token));
 
         [DoesNotReturn]
@@ -108,15 +108,17 @@ namespace BifyLang.Ast
             }
             if (Nodes.Count > 1)
             {
-                Nodes.WriteNodes();
                 if (!IsHandlingLine)
                 {
-                    Fail("Invalid Syntax! Check your input for missing operators or delimiters.", DiagnosticKind.Syntax, Nodes[1].Token);
+                    BifyDebug.LogError("\n" + string.Join("\n", Nodes));
+                    Fail("invalid syntax", DiagnosticKind.SYNTAX, Nodes[1].Token);
                 }
                 else
                 {
+                    BifyDebug.LogError("\n" + string.Join("\n", Nodes));
                     HandleInvalidSyntax();
                 }
+
             }
             return Nodes.Count == 1 ? Nodes[0] : null;
         }
@@ -174,7 +176,7 @@ namespace BifyLang.Ast
             {
                 return NextToken();
             }
-            return Fail<Token>(message, DiagnosticKind.Syntax, token ?? GetPreviousToken());
+            return Fail<Token>(message, DiagnosticKind.SYNTAX, token ?? GetPreviousToken());
         }
 
         public Token? GetNextToken()
@@ -195,7 +197,7 @@ namespace BifyLang.Ast
         {
             if (IsAtEnd())
             {
-                return Fail<AstBlock>($"{name} body not found.", DiagnosticKind.Syntax, GetPreviousToken());
+                return Fail<AstBlock>($"missing {name.ToLowerInvariant()} body", DiagnosticKind.SYNTAX, GetPreviousToken());
             }
             List<Token> bodyTokens = null;
             if (GetNextToken()?.Type == TokenType.LCUR)
@@ -204,7 +206,7 @@ namespace BifyLang.Ast
             }
             if (bodyTokens == null)
             {
-                return Fail<AstBlock>($"{name} body not found.", DiagnosticKind.Syntax, PeekTokenOrNull() ?? GetPreviousToken());
+                return Fail<AstBlock>($"missing {name.ToLowerInvariant()} body", DiagnosticKind.SYNTAX, PeekTokenOrNull() ?? GetPreviousToken());
             }
 
             AstBlock blockNode = ParseBlock(bodyTokens);
@@ -234,12 +236,12 @@ namespace BifyLang.Ast
                 Nodes.WriteNodes();
                 if (Nodes[0].Token.Type == TokenType.POINTER || Nodes[0] is AstIdentifier)
                 {
-                    Fail($"Invalid syntax.", DiagnosticKind.Syntax, Nodes[0].Token);
+                    Fail($"Invalid syntax.", DiagnosticKind.SYNTAX, Nodes[0].Token);
                 }
-                Fail("Opa 2 node", DiagnosticKind.Syntax, Nodes[1].Token);
+                Fail("Opa 2 node", DiagnosticKind.SYNTAX, Nodes[1].Token);
             }
             Token? errToken = Nodes.Count > 1 ? Nodes[1].Token : Nodes.FirstOrDefault()?.Token;
-            Fail("Invalid Syntax.", DiagnosticKind.Syntax, errToken);
+            Fail("Invalid Syntax.", DiagnosticKind.SYNTAX, errToken);
         }
     }
 }

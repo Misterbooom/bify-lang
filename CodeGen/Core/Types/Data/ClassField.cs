@@ -5,21 +5,13 @@ using LLVMSharp.Interop;
 
 namespace BifyLang.CodeGen.Core.Types.Data;
 
-public enum AccessLevel
-{
-    PUBLIC,
-    PRIVATE,
-    PROTECTED,
-}
-
 public struct ClassField(
     string name,
     BifyType type,
     AstNode? value,
     AccessLevel accessLevel,
     int index = -1,
-    bool isConst = false,
-    bool isWeak = false,
+    FieldFlags flags = FieldFlags.NONE,
     ICompositeType declaringType = null!,
     bool isPoison = false)
 {
@@ -28,11 +20,14 @@ public struct ClassField(
     public LLVMValueRef Value = default;
     public readonly int Index = index;
     public readonly AccessLevel AccessLevel = accessLevel;
+    public readonly FieldFlags Flags = flags;
     public readonly ICompositeType DeclaringType = declaringType;
     public readonly AstNode? ValueNode = value;
-    public readonly bool IsConst = isConst;
-    public readonly bool IsWeak = isWeak;
     public readonly bool IsPoison = isPoison;
+
+    public bool IsConst => Flags.HasFlag(FieldFlags.CONST);
+    public bool IsWeak => Flags.HasFlag(FieldFlags.WEAK);
+    public bool IsStatic => Flags.HasFlag(FieldFlags.STATIC);
 }
 
 public struct ClassMethod(
@@ -43,8 +38,7 @@ public struct ClassMethod(
     int vtableIndex = -1,
     ICompositeType declaringType = null!,
     AstNode? body = null,
-    bool isVirtual = false,
-    bool isOverride = false,
+    MethodFlags flags = MethodFlags.NONE,
     List<ParameterInfo>? parameters = null,
     bool isPoison = false)
 {
@@ -53,10 +47,15 @@ public struct ClassMethod(
     public LLVMValueRef FunctionValue = functionValue;
     public int VTableIndex = vtableIndex;
     public readonly AccessLevel AccessLevel = accessLevel;
+    public readonly MethodFlags Flags = flags;
     public readonly ICompositeType DeclaringType = declaringType;
     public readonly AstNode? Body = body;
-    public readonly bool IsVirtual = isVirtual;
-    public readonly bool IsOverride = isOverride;
     public readonly List<ParameterInfo> Parameters = parameters ?? [];
     public readonly bool IsPoison = isPoison;
+
+    public bool IsVirtual => Flags.HasFlag(MethodFlags.VIRTUAL);
+    public bool IsOverride => Flags.HasFlag(MethodFlags.OVERRIDE);
+    public bool IsAbstract => Flags.HasFlag(MethodFlags.ABSTRACT);
+    public bool IsFinal => Flags.HasFlag(MethodFlags.FINAL);
+    public bool IsStatic => Flags.HasFlag(MethodFlags.STATIC);
 }

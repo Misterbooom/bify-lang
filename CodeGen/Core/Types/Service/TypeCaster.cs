@@ -53,8 +53,8 @@ public static class TypeCaster
             if (valClass.IsSubclassOf(tgtClass))
                 return new TypedValue(value.Value, targetType, value.IsWeak);
 
-            return ctx.Fail<TypedValue>($"Cannot implicitly convert type '{valClass.Name}' to '{tgtClass.Name}'",
-                DiagnosticKind.Type);
+            return ctx.Fail<TypedValue>($"cannot convert '{valClass.Name}' to '{tgtClass.Name}'",
+                DiagnosticKind.TYPE);
         }
 
         if (value.Type is StructType valStruct && targetType is StructType targetStruct)
@@ -62,8 +62,8 @@ public static class TypeCaster
             if (valStruct.FullName == targetStruct.FullName)
                 return value;
 
-            return ctx.Fail<TypedValue>($"Cannot implicitly convert type '{valStruct.FullName}' to '{targetStruct.FullName}'",
-                DiagnosticKind.Type);
+            return ctx.Fail<TypedValue>($"cannot convert '{valStruct.FullName}' to '{targetStruct.FullName}'",
+                DiagnosticKind.TYPE);
         }
 
         if (value.Type.Name == targetType.Name || value.Type.Type == targetType.Type)
@@ -76,8 +76,8 @@ public static class TypeCaster
             targetType.Type.Kind == LLVMTypeKind.LLVMPointerTypeKind)
             return CastPointer(ctx, value, targetType, "conv_ptr");
 
-        return ctx.Fail<TypedValue>($"Cannot implicitly convert type '{value.Type.Name}' to '{targetType.Name}'",
-            DiagnosticKind.Type);
+        return ctx.Fail<TypedValue>($"cannot convert '{value.Type.Name}' to '{targetType.Name}'",
+            DiagnosticKind.TYPE);
     }
 
 
@@ -91,8 +91,8 @@ public static class TypeCaster
             if (valStruct.FullName == targetStruct.FullName)
                 return value;
 
-            return ctx.Fail<TypedValue>($"Cannot cast '{valStruct.FullName}' to '{targetStruct.FullName}'",
-                DiagnosticKind.Cast);
+            return ctx.Fail<TypedValue>($"cannot cast '{valStruct.FullName}' to '{targetStruct.FullName}'",
+                DiagnosticKind.CAST);
         }
 
         if (value.Type.Name == targetType.Name)
@@ -114,7 +114,7 @@ public static class TypeCaster
         if (value.Type.Name == "int" && targetType.Type.Kind == LLVMTypeKind.LLVMPointerTypeKind)
             return new TypedValue(ctx.Builder.BuildIntToPtr(value.Value, targetType.Type, "cast_itoptr"), targetType);
 
-        return ctx.Fail<TypedValue>($"Cannot cast '{value.Type.Name}' to '{targetType.Name}'", DiagnosticKind.Cast);
+        return ctx.Fail<TypedValue>($"cannot cast '{value.Type.Name}' to '{targetType.Name}'", DiagnosticKind.CAST);
     }
 
     private static TypedValue CastClass(CodeGenContext ctx, ClassType valClass, ClassType tgtClass, TypedValue value,
@@ -123,7 +123,7 @@ public static class TypeCaster
         if (valClass.IsSubclassOf(tgtClass) || tgtClass.IsSubclassOf(valClass))
             return new TypedValue(value.Value, targetType, value.IsWeak);
 
-        return ctx.Fail<TypedValue>($"Cannot cast '{valClass.FullName}' to '{tgtClass.FullName}'", DiagnosticKind.Cast);
+        return ctx.Fail<TypedValue>($"cannot cast '{valClass.FullName}' to '{tgtClass.FullName}'", DiagnosticKind.CAST);
     }
 
     private static TypedValue CastPointer(CodeGenContext ctx, TypedValue value, BifyType targetType, string irName)

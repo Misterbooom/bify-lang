@@ -1,4 +1,5 @@
 #nullable enable
+using System;
 using System.Linq;
 using BifyLang.Ast;
 using BifyLang.CodeGen.Core;
@@ -20,6 +21,7 @@ public class FunctionGen(CodeGenContext ctx) : CodeGenBase(ctx)
     {
         string functionName = functionDecl.FunctionNameNode.Name;
         var mangledName = NameMangler.GenerateFunctionName(_ctx.ModuleContext.Name, functionName);
+        AccessLevel accessLevel = functionDecl.FlagNode.HasFlag("public") ? AccessLevel.PUBLIC : AccessLevel.PRIVATE;
 
         var existingFn = _ctx.Module.GetNamedFunction(mangledName);
         if (existingFn.Handle != 0)
@@ -27,20 +29,30 @@ public class FunctionGen(CodeGenContext ctx) : CodeGenBase(ctx)
             return existingFn;
         }
 
+        if (!FlagChecker.CheckFunctionFlags(functionDecl.FlagNode.ToStringArray(), out var error))
+        {
+            _ctx.Error(error, DiagnosticKind.SYNTAX, functionDecl.FlagNode);
+        }
+
+        if (functionDecl.BlockNode == null)
+        {
+            _ctx.Error("missing function body", DiagnosticKind.SYNTAX, functionDecl.FunctionNameNode);
+        }
         var returnType = TypeResolver.Resolve(functionDecl.TypeNode, _ctx);
         var parameters = ParameterResolver.Resolve(functionDecl.ArgumentsNode, _ctx);
         var paramTypes = parameters.Select(p => p.Type.Type).ToArray();
+        VisibilityChecker.CheckFunctionSignature(_ctx, accessLevel, returnType, parameters, functionDecl);
 
-        
+
         var functionType = LLVMTypeRef.CreateFunction(returnType.Type, paramTypes, false);
         var functionValue = _ctx.Module.AddFunction(mangledName, functionType);
 
-        _ctx.CurrentScope.Define(functionName, functionValue, new CallableType(functionName, mangledName, [..parameters], returnType, functionType));
+        _ctx.CurrentScope.Define(functionName, functionValue, new CallableType(functionName, mangledName, [..parameters], returnType, functionType), accessLevel:accessLevel);
 
         return functionValue;
     }
 
- 
+
     public void EmitFunctionBody(AstFunctionDecl functionDecl)
     {
         string functionName = functionDecl.FunctionNameNode.Name;
@@ -56,7 +68,7 @@ public class FunctionGen(CodeGenContext ctx) : CodeGenBase(ctx)
 
         var functionValue = _ctx.Module.GetNamedFunction(mangledName);
         if (functionValue.Handle == 0)
-            functionValue = DeclareFunction(functionDecl);
+            throw new InvalidOperationException("Can't find function in module.");
 
         _bodyEmitter.Emit(functionValue, returnType, parameters, functionDecl.BlockNode);
     }
@@ -66,7 +78,6 @@ public class FunctionGen(CodeGenContext ctx) : CodeGenBase(ctx)
         if (functionDecl.IsPoison)
             return;
 
-        DeclareFunction(functionDecl);
         EmitFunctionBody(functionDecl);
     }
 }
