@@ -45,6 +45,7 @@ public static class ClassMemberCollector
 
         var accessLevel = ParseAccessLevel(varDecl.Flag);
         var type = TypeResolver.Resolve(varDecl.Type, ctx);
+        VisibilityChecker.CheckField(ctx, classType, accessLevel, type, varDecl);
         var value = varDecl.AssignmentNode.Right;
         bool isConst = varDecl.Flag?.HasFlag("val") ?? false;
 
@@ -76,20 +77,21 @@ public static class ClassMemberCollector
         if (classType is StructType)
         {
             if (!FlagChecker.CheckStructMethodFlags(flags, out var error))
-                ctx.Fail(error ?? "Invalid method flags.", DiagnosticKind.ATTRIBUTE, funcDecl);
+                ctx.Error(error ?? "Invalid method flags.", DiagnosticKind.ATTRIBUTE, funcDecl);
         }
         else if (classType is ClassType)
         {
             if (!FlagChecker.CheckMethodFlags(flags, out var error))
-                ctx.Fail(error ?? "Invalid method flags.", DiagnosticKind.ATTRIBUTE, funcDecl);
+                ctx.Error(error ?? "Invalid method flags.", DiagnosticKind.ATTRIBUTE, funcDecl);
         }
 
 
-    var accessLevel = ParseAccessLevel(funcDecl.FlagNode);
+        var accessLevel = ParseAccessLevel(funcDecl.FlagNode);
         bool isVirtual = funcDecl.FlagNode?.HasFlag("virtual") ?? false;
         bool isOverride = funcDecl.FlagNode?.HasFlag("override") ?? false;
         var parameters = ParameterResolver.Resolve(funcDecl.ArgumentsNode, ctx);
         var returnType = ResolveMethodReturnType(funcDecl, ctx, name, parameters, ref isVirtual, isOverride);
+        VisibilityChecker.CheckMethodSignature(ctx, classType, accessLevel, returnType, parameters, funcDecl);
 
         var paramTypes = new List<LLVMTypeRef> { LLVMTypeRef.CreatePointer(ctx.Context.Int8Type, 0) };
         paramTypes.AddRange(parameters.Select(p => p.Type.Type));
@@ -105,8 +107,8 @@ public static class ClassMemberCollector
     {
         var voidType = BifyType.CreateVoid(ctx);
         var fnType = LLVMTypeRef.CreateFunction(voidType.Type, [], false);
-        var sig = new CallableType(name, name, [], voidType, fnType, true);
-        return new ClassMethod(name, sig, default, AccessLevel.PUBLIC, -1, classType, isPoison: true);
+        var type = new CallableType(name, name, [], voidType, fnType, true);
+        return new ClassMethod(name, type, default, AccessLevel.PUBLIC, -1, classType, isPoison: true);
     }
 
     public static ClassMethod CollectDestructorOrDefault(AstFunctionDecl? dtorNode, CodeGenContext ctx, ClassType classType)

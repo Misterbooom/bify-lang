@@ -16,7 +16,7 @@ public class ModuleCodeGenTests : BifyTestBase
         {
             string moduleFile = Path.Combine(tempDir, "mod.bify");
             File.WriteAllText(moduleFile, """
-            class Greeter {
+            public class Greeter {
                 func greet() {
                     printf("Hello from module");
                 }

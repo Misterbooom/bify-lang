@@ -41,7 +41,7 @@ public class FunctionLayoutBuilder(CodeGenContext ctx) : LayoutBuilder(ctx)
                 }
                 try
                 {
-                    funcGen.DeclareFunction(functionChildNode, MemberResolver.ResolveFunctionFlags(_ctx, functionChildNode) );
+                    funcGen.DeclareFunction(functionChildNode);
                 }
                 catch (BifyCompilationException)
                 {

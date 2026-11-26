@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Linq;
+using System.Text;
 using Spectre.Console;
 
 namespace BifyLang.Exceptions;
@@ -25,8 +26,7 @@ public static class ErrorFormatter
     public static void PrintDiagnostic(Diagnostic? diagnostic)
     {
         if (diagnostic is null) return;
-
-        string errorType = $"{diagnostic.Kind}Error";
+        string errorType = $"{ToPascalCase(diagnostic.Kind.ToString())}Error";
         var loc = diagnostic.Location;
 
         var panel = new Panel($"[indianred1]{Markup.Escape(diagnostic.Message)}[/]")
@@ -56,7 +56,20 @@ public static class ErrorFormatter
 
         PrintErrorLine(loc.FilePath, loc.LineNumber, loc.ColumnNumber);
     }
+    private static string ToPascalCase(ReadOnlySpan<char> input)
+    {
+        var sb = new StringBuilder(input.Length);
+        bool upper = true;
 
+        foreach (char c in input)
+        {
+            if (c == '_') { upper = true; continue; }
+            sb.Append(upper ? char.ToUpperInvariant(c) : char.ToLowerInvariant(c));
+            upper = false;
+        }
+
+        return sb.ToString();
+    }
     private static void PrintErrorLine(string? filePath, int lineNumber, int columnNumber)
     {
         if (string.IsNullOrWhiteSpace(filePath) || lineNumber <= 0 || !File.Exists(filePath))

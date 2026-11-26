@@ -1,9 +1,8 @@
-class Printer{
-    constructor(){
-        
+public class Hey{
+    public func leakPrivateMethod():Bar{
+        return new Bar();
     }
-      void print(int a){
-            printf("test%d", a);
-        
-    }
+}
+private class Bar{
+
 }

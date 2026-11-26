@@ -13,6 +13,7 @@ public enum DiagnosticKind
     OVERFLOW,
     IMPORT,
     CIRCULAR_INHERITANCE,
+    ACCESS_VIOLATION,
     UNKNOWN,
 }
 

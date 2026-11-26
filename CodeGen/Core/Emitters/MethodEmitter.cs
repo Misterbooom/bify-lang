@@ -1,9 +1,12 @@
 #nullable enable
+using System;
 using System.Collections.Generic;
 using BifyLang.CodeGen.Core.Class;
 using BifyLang.CodeGen.Core.Context;
 using BifyLang.CodeGen.Core.Types.Data;
+using BifyLang.CodeGen.Core.Types.Service;
 using BifyLang.CodeGen.Core.Validators;
+using BifyLang.Exceptions;
 
 namespace BifyLang.CodeGen.Core.Emitters;
 
@@ -23,8 +26,10 @@ public class MethodEmitter(CodeGenContext ctx) : CodeGenBase(ctx)
         var returnType = classMethod.Signature.ReturnType;
         bool isDestructor = classMethod.Name == DestructorSynthesizer.DestructorName;
         bool isConstructor = classMethod.Name == "constructor";
-
-
+        if (classMethod.FunctionValue.Handle == IntPtr.Zero)
+        {
+            throw new InvalidOperationException("Method value is null.");
+        }
         _bodyEmitter.Emit(
             classMethod.FunctionValue,
             returnType,

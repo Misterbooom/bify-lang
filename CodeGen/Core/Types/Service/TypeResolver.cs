@@ -7,7 +7,7 @@ using BifyLang.Lexer;
 
 namespace BifyLang.CodeGen.Core.Types.Service;
 
-public class TypeResolver
+public static class TypeResolver
 {
     public static BifyType Resolve(AstNode? typeNode, CodeGenContext ctx)
     {
@@ -23,6 +23,13 @@ public class TypeResolver
             BifyDebug.Log(ctx.TypeRegistry.ToString());
             if (ctx.TypeRegistry.TryGetType(NameMangler.GenerateTypeName(ctx.ModuleContext.Name, id.Name), out type))
             {
+                if (IsPrivateType(type, ctx))
+                {
+                    return ctx.Fail<BifyType>(
+                        $"Cannot access private type '{type.Name}' from module '{((ICompositeType)type).ModuleName}'.",
+                        DiagnosticKind.ACCESS_VIOLATION,
+                        typeNode);
+                }
                 return type;
             }
             BifyDebug.Log(NameMangler.GenerateTypeName(ctx.ModuleContext.Name, id.Name));
@@ -45,12 +52,25 @@ public class TypeResolver
         {
             string mangled = NameMangler.GenerateTypeName(modId.Name, typeId.Name);
             if (ctx.TypeRegistry.TryGetType(mangled, out var type))
+            {
+                if (IsPrivateType(type, ctx))
+                {
+                    return ctx.Fail<BifyType>(
+                        $"Cannot access private type '{type.Name}' from module '{((ICompositeType)type).ModuleName}'.",
+                        DiagnosticKind.ACCESS_VIOLATION,
+                        memberAccess);
+                }
                 return type;
+            }
             return ctx.Fail<BifyType>($"Cannot resolve type '{modId.Name}.{typeId.Name}'.", DiagnosticKind.NAME, memberAccess);
         }
         return ctx.Fail<BifyType>("Invalid type expression.", DiagnosticKind.UNKNOWN, memberAccess);
     }
 
+    private static bool IsPrivateType(BifyType type, CodeGenContext ctx) =>
+        type is ICompositeType compositeType &&
+        !compositeType.Flags.HasFlag(TypeFlags.PUBLIC) &&
+        ctx.ModuleContext.Name != compositeType.ModuleName;
     // private static BifyType ResolvePointer(AstUnaryOperator unary, CodeGenContext ctx)
     // {
     //     var baseType = Resolve(unary.Operand, ctx);

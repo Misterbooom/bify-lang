@@ -1,7 +1,8 @@
-
-public class Hey{
-    
+import "testModule.bify";
+class H{
 }
-protected func main()->int {
+func main()->int {
+    val a = new testModule.Hey();
+    val b = new H();
     return 0;
 }

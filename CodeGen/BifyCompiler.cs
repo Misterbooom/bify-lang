@@ -55,6 +55,7 @@ public class BifyCompiler
             if (ctx.Diagnostics.HasErrors)
             {
                 ErrorFormatter.PrintDiagnostics(ctx.Diagnostics);
+                return;
             }
 
             LLVMValueRef userMain = FindUserMain(ctx, module);

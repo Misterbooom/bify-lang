@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
@@ -12,12 +13,18 @@ public class DiagnosticBag
 
     public void Report(string msg, DiagnosticKind kind, SourceLocation location)
     {
+        ArgumentNullException.ThrowIfNull(msg);
+        ArgumentNullException.ThrowIfNull(kind);
+        ArgumentNullException.ThrowIfNull(location);
         _diagnostics.Add(new Diagnostic(msg, kind, location));
     }
 
     [DoesNotReturn]
     public void Fail(string msg, DiagnosticKind kind, SourceLocation location)
     {
+        ArgumentNullException.ThrowIfNull(msg);
+        ArgumentNullException.ThrowIfNull(kind);
+        ArgumentNullException.ThrowIfNull(location);
         Diagnostic diagnostic = new Diagnostic(msg, kind, location);
         _diagnostics.Add(diagnostic);
         throw new BifyCompilationException(diagnostic);
@@ -26,6 +33,9 @@ public class DiagnosticBag
     [DoesNotReturn]
     public T Fail<T>(string msg, DiagnosticKind kind, SourceLocation location)
     {
+        ArgumentNullException.ThrowIfNull(msg);
+        ArgumentNullException.ThrowIfNull(kind);
+        ArgumentNullException.ThrowIfNull(location);
         Fail(msg, kind, location);
         return default!;
     }

@@ -79,6 +79,9 @@ public class ClassLayoutBuilder(CodeGenContext ctx) : LayoutBuilder(ctx)
             Flags = MemberResolver.ResolveTypeFlags(ctx, info.ClassNode),
         };
 
+        if (parent != null)
+            Validators.VisibilityChecker.CheckInheritance(_ctx, classType, parent, info.ClassNode.ParentNode);
+
         _ctx.TypeRegistry.Register(mangledName, classType);
         _ctx.ModuleContext.TypesInfo[mangledName] = classType;
         return classType;
