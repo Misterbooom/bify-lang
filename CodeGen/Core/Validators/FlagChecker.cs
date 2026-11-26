@@ -98,6 +98,9 @@ public static class FlagChecker
         if (list.Contains("abstract") && list.Contains("final"))
             return Fail("Method cannot be both 'abstract' and 'final'.", out error);
 
+        if (list.Contains("final") && !list.Contains("override"))
+            return Fail("Method marked 'final' must also be marked 'override'.", out error);
+
         return true;
     }
 

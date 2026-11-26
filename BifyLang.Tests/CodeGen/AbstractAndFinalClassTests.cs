@@ -176,4 +176,64 @@ public class AbstractAndFinalClassTests : BifyTestBase
 
         AssertCompileError(code, DiagnosticKind.ATTRIBUTE);
     }
+
+    [Test]
+    public void FinalOverrideMethod_ExecutesViaBaseReference()
+    {
+        string code = """
+        abstract class Base {
+            public abstract func getVal() -> int;
+        }
+        class Mid : Base {
+            public override final func getVal() -> int {
+                return 77;
+            }
+        }
+        func main() -> int {
+            val obj: Base = new Mid();
+            return obj.getVal();
+        }
+        """;
+
+        var result = NativeRunner.Run(code);
+        Assert.That(result.ExitCode, Is.EqualTo(77));
+    }
+
+    [Test]
+    public void FinalOverrideMethod_OverriddenInSubclass_Rejected()
+    {
+        string code = """
+        abstract class Base {
+            public abstract func getVal() -> int;
+        }
+        class Mid : Base {
+            public override final func getVal() -> int {
+                return 1;
+            }
+        }
+        class Leaf : Mid {
+            public override func getVal() -> int {
+                return 2;
+            }
+        }
+        func main() {}
+        """;
+
+        AssertCompileError(code, DiagnosticKind.TYPE);
+    }
+
+    [Test]
+    public void FinalMethod_WithoutOverride_Rejected()
+    {
+        string code = """
+        class Foo {
+            public final func bar() -> int {
+                return 1;
+            }
+        }
+        func main() {}
+        """;
+
+        AssertCompileError(code, DiagnosticKind.ATTRIBUTE);
+    }
 }

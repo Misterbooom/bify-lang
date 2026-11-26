@@ -1,9 +1,20 @@
 import "testModule.bify";
-class H{
-
+abstract class A{
+    abstract func gaw();
+}
+abstract class B: A{
+    final override func gaw(){
+    
+    }
+    
+}
+abstract class C:B{
+    override func gaw(){
+    
+    }
+    
 }
 
 func main()->int {
-    testModule.privFunc();
     return 0;
 }
