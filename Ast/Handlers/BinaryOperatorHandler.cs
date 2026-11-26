@@ -121,7 +121,7 @@ namespace BifyLang.Ast.Handlers
                 TokenType.STRING or TokenType.CHAR => NodeConverter.TokenToNode(token, Builder),
                 TokenType.NEW => new NewHandler(Builder).ParseNewExpression(token),
                 _ => Builder.Fail<AstNode>(
-                    $"Unexpected token '{token.Value}' found in expression. Verify your syntax and try again.",
+                    $"Unexpected token '{token.Value}'.",
                     DiagnosticKind.Syntax,
                     token
                 )

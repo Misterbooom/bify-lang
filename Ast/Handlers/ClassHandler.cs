@@ -1,45 +1,25 @@
+using System;
 using System.Collections.Generic;
 using BifyLang.Exceptions;
 using BifyLang.Lexer;
 
 namespace BifyLang.Ast.Handlers
 {
-    internal class ClassHandler(AstBuilder builder) : TokenHandler(builder)
+    internal class ClassHandler(AstBuilder builder, DeclarationHeader header) : TokenHandler(builder)
     {
+        private readonly  DeclarationHeader _header = header;
         public override void HandleToken(Token token)
         {
-            bool isStruct = token.Value == "struct";
+            bool isStruct = _header.Kind ==  DeclarationKind.Struct;
             string kindLower = isStruct ? "struct" : "class";
             string kindTitle = isStruct ? "Struct" : "Class";
 
-            Token identifierToken = Builder.GetNextToken();
-            if (identifierToken?.Type != TokenType.IDENTIFIER)
-            {
-                Builder.Fail($"Invalid {kindLower} name: '{identifierToken?.Value ?? "null"}'.", DiagnosticKind.Syntax, identifierToken ?? token);
-            }
-            AstNode nameNode = new AstIdentifier(identifierToken, identifierToken.Value);
-            Builder.TokenIndex += 1;
-            var nextToken = Builder.GetNextToken();
-            AstNode parentNode = null;
-            if (nextToken?.Type == TokenType.COLON)
-            {
-                List<Token> parentTokens = TokensFormatter.GetTokensBetween(
-                    Builder.Tokens,
-                    ref Builder.TokenIndex,
-                    TokenType.COLON,
-                    TokenType.LCUR,
-                    Builder.Diagnostics,
-                    Builder.FilePath
-                );
-                parentNode = Builder.ParseTokens(parentTokens);
-                Builder.TokenIndex -= 1;
-            }
-
+            Builder.TokenIndex = _header.BodyStartIndex - 1;
             AstNode bodyNode = Builder.HandleBody(kindTitle);
             VerifyBody((AstBlock)bodyNode, kindLower, kindTitle);
             Builder.CurrentNode = isStruct
-                ? new AstStruct(token, nameNode, bodyNode, parentNode)
-                : new AstClass(token, nameNode, bodyNode, parentNode);
+                ? new AstStruct(token, _header.NameNode, bodyNode, _header.TypeNode, _header.FlagNode)
+                : new AstClass(token, _header.NameNode, bodyNode, _header.TypeNode, _header.FlagNode);
         }
 
         private void VerifyBody(AstBlock body, string kindLower, string kindTitle)

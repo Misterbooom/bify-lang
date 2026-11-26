@@ -67,7 +67,7 @@ public class VariableDeclGen(CodeGenContext ctx) : CodeGenBase(ctx)
         if (varDecl.Type is AstIdentifier id && id.Name == "void")
         {
             if (varDecl.AssignmentNode.Right == null)
-                ctx.Fail("Implicitly-typed variables ('var') must be initialized.", DiagnosticKind.Type, varDecl);
+                ctx.Fail("Implicitly-typed variables must be initialized.", DiagnosticKind.Type, varDecl);
 
             var init = expressionDispatcher.EmitExpression(varDecl.AssignmentNode.Right!);
             if (init.Type.Name == "void")

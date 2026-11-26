@@ -210,7 +210,8 @@ public class ClassDependencyResolver(CodeGenContext ctx) : CodeGenBase(ctx)
     {
         return string.Join(
             Environment.NewLine,
-            _compilationOrder.ConvertAll(c => $"{c.ModuleName}.{c.Name}:{_inheritanceMap[NameMangler.GenerateTypeName(c.ModuleName,c.Name)]}")
+            _compilationOrder.ConvertAll(c =>
+                $"{c.ModuleName}.{c.Name}:{_inheritanceMap[NameMangler.GenerateTypeName(c.ModuleName,c.Name)]}")
         );
     }
 }

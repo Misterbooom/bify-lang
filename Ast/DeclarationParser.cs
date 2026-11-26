@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using BifyLang.Exceptions;
 using BifyLang.Lexer;
@@ -8,6 +9,17 @@ namespace BifyLang.Ast;
 internal class DeclarationParser(AstBuilder builder)
 {
     private readonly AstBuilder _builder = builder;
+
+    private static Dictionary<TokenType, DeclarationKind> _kindMap = new()
+    {
+        { TokenType.VAL, DeclarationKind.Variable },
+        { TokenType.MUT, DeclarationKind.Variable },
+        { TokenType.FUNCTION, DeclarationKind.Function },
+        { TokenType.CLASS, DeclarationKind.Class },
+        { TokenType.STRUCT, DeclarationKind.Struct },
+        {TokenType.CONSTRUCTOR, DeclarationKind.Function},
+        {TokenType.DESTRUCTOR, DeclarationKind.Function},
+    };
 
     public bool TryParseDeclaration(out DeclarationHeader header)
     {
@@ -28,21 +40,29 @@ internal class DeclarationParser(AstBuilder builder)
         if (keyToken.Type is TokenType.CONSTRUCTOR or TokenType.DESTRUCTOR)
             return TryBuildCtorOrDtor(tokens, i, keyToken, flags, out header);
 
-        DeclarationKind kind = keyToken.Type is TokenType.MUT or TokenType.VAL
-            ? DeclarationKind.Variable
-            : DeclarationKind.Function;
-
+        DeclarationKind kind = _kindMap[keyToken.Type];
+        BifyDebug.Log("Find kind: "  + kind);
         if (kind == DeclarationKind.Variable)
         {
             flags.Add(new AstIdentifier(keyToken, keyToken.Value));
         }
 
         AstIdentifier nameNode = ParseName(tokens, ref i);
-
-        AstNode typeNode = kind == DeclarationKind.Variable
-            ? ParseVariableType(tokens, ref i, keyToken, out int endIndex, out int bodyStartIndex)
-            : ParseFunctionType(tokens, ref i, keyToken, out endIndex, out bodyStartIndex);
-
+        // AstNode typeNode = kind == DeclarationKind.Variable
+        //     ?
+        //     : ;
+        int endIndex;
+        int bodyStartIndex;
+        AstNode typeNode = kind switch
+        {
+            DeclarationKind.Variable => ParseVariableType(tokens, ref i, keyToken, out endIndex,
+                out bodyStartIndex),
+            DeclarationKind.Function => ParseFunctionType(tokens, ref i, keyToken, out endIndex,
+                out  bodyStartIndex),
+            DeclarationKind.Class or DeclarationKind.Struct => ParseParent(tokens, ref i, keyToken, out endIndex,
+                out  bodyStartIndex),
+            _ => throw new InvalidOperationException("Unexpected declaration kind."),
+        };
         header = new DeclarationHeader
         {
             Kind = kind,
@@ -59,11 +79,12 @@ internal class DeclarationParser(AstBuilder builder)
     private static List<AstNode> CollectFlags(List<Token> tokens, ref int i)
     {
         List<AstNode> flags = [];
-        while (i < tokens.Count && tokens[i].Type is TokenType.IDENTIFIER or TokenType.CONST)
+        while (i < tokens.Count && tokens[i].Type is TokenType.IDENTIFIER)
         {
             Token flagTok = tokens[i++];
             flags.Add(new AstIdentifier(flagTok, flagTok.Value));
         }
+
         return flags;
     }
 
@@ -71,11 +92,7 @@ internal class DeclarationParser(AstBuilder builder)
         new(flags.Count > 0 ? flags[0].Token : fallbackToken, flags);
 
     private static bool IsDeclarationKeyword(TokenType type) =>
-        type is TokenType.MUT
-            or TokenType.VAL
-            or TokenType.FUNCTION
-            or TokenType.CONSTRUCTOR
-            or TokenType.DESTRUCTOR;
+    _kindMap.ContainsKey(type);
 
     private bool TryBuildCtorOrDtor(
         List<Token> tokens, int i, Token ctorToken, List<AstNode> flags, out DeclarationHeader header)
@@ -107,7 +124,6 @@ internal class DeclarationParser(AstBuilder builder)
         };
         return true;
     }
-
     private AstIdentifier ParseName(List<Token> tokens, ref int i)
     {
         if (i < tokens.Count && tokens[i].Type == TokenType.IDENTIFIER)
@@ -118,7 +134,7 @@ internal class DeclarationParser(AstBuilder builder)
 
         Token? unexpected = i < tokens.Count ? tokens[i] : null;
         _builder.Error(unexpected is null
-            ? "Expected declaration name, got EOF"
+            ? "Expected declaration name."
             : $"Invalid declaration name: '{unexpected.Value}'");
 
         Token poison = unexpected ?? new Token(TokenType.POISON, "unknown");
@@ -148,6 +164,22 @@ internal class DeclarationParser(AstBuilder builder)
         return typeNode;
     }
 
+    private AstNode? ParseParent(List<Token> tokens, ref int i, Token fallbackToken, out int endIndex, out int bodyStartIndex)
+    {
+        if (i < tokens.Count && tokens[i].Type == TokenType.COLON)
+        {
+            endIndex = i;
+
+            List<Token> parentTokens = TokensFormatter.GetTokensBetween(tokens, ref i, TokenType.COLON, TokenType.LCUR);
+            AstNode parent = _builder.ParseTokens(parentTokens);
+
+            bodyStartIndex = i;
+            return parent;
+        }
+        endIndex = i;
+        bodyStartIndex = i;
+        return null;
+    }
     private AstNode ParseFunctionType(
         List<Token> tokens, ref int i, Token fallbackToken, out int endIndex, out int bodyStartIndex)
     {
@@ -269,6 +301,7 @@ internal class DeclarationParser(AstBuilder builder)
             if (tokens[i].Type == open) depth++;
             else if (tokens[i].Type == close && --depth == 0) return i;
         }
+
         return -1;
     }
 }

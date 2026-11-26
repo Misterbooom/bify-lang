@@ -6,8 +6,11 @@ namespace BifyLang.Ast;
 internal enum DeclarationKind
 {
     Variable,
-    Function
+    Function,
+    Class,
+    Struct
 }
+
 
 internal readonly record struct DeclarationHeader(
     DeclarationKind Kind,

@@ -108,15 +108,17 @@ namespace BifyLang.Ast
             }
             if (Nodes.Count > 1)
             {
-                Nodes.WriteNodes();
                 if (!IsHandlingLine)
                 {
+                    BifyDebug.LogError("\n" + string.Join("\n", Nodes));
                     Fail("Invalid Syntax! Check your input for missing operators or delimiters.", DiagnosticKind.Syntax, Nodes[1].Token);
                 }
                 else
                 {
+                    BifyDebug.LogError("\n" + string.Join("\n", Nodes));
                     HandleInvalidSyntax();
                 }
+
             }
             return Nodes.Count == 1 ? Nodes[0] : null;
         }
