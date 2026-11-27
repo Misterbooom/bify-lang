@@ -21,6 +21,7 @@ public class StructGen(CodeGenContext ctx) : CodeGenBase(ctx)
         }
         StructType structType = (StructType)type;
         MethodEmitter methodEmitter = new(_ctx);
+        _ctx.CurrentCompositeType = structType;
         foreach (var method in structType.Methods.Values)
         {
             if (method.IsPoison)
@@ -34,5 +35,7 @@ public class StructGen(CodeGenContext ctx) : CodeGenBase(ctx)
             {
             }
         }
+        _ctx.CurrentCompositeType = null;
+
     }
 }

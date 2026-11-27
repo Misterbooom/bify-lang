@@ -29,15 +29,27 @@ public class MethodEmitter(CodeGenContext ctx) : CodeGenBase(ctx)
             _ctx.Builder.BuildUnreachable();
             return;
         }
-        var parameters = new List<ParameterInfo>
+        List<ParameterInfo> parameters = [];
+
+        if (!classMethod.IsStatic)
         {
-            new("this", (BifyType)classMethod.DeclaringType, false, null)
-        };
-        parameters.AddRange(classMethod.Parameters);
+            parameters =
+            [
+                new("this", (BifyType)classMethod.DeclaringType, false, null),
+                .. classMethod.Parameters
+            ];
+        }
+        else
+        {
+            parameters = [.. classMethod.Parameters];
+        }
+
 
         var returnType = classMethod.Signature.ReturnType;
         bool isDestructor = classMethod.Name == DestructorSynthesizer.DestructorName;
         bool isConstructor = classMethod.Name == "constructor";
+        BifyDebug.Log("isConstuctor " + isConstructor);
+
         if (classMethod.FunctionValue.Handle == IntPtr.Zero)
         {
             throw new InvalidOperationException("Method value is null.");
@@ -52,6 +64,7 @@ public class MethodEmitter(CodeGenContext ctx) : CodeGenBase(ctx)
             isMethod: true,
             isDestructor: isDestructor,
             isConstructor: isConstructor,
+            isStatic:classMethod.IsStatic,
             declaringClass: classMethod.DeclaringType);
     }
 }

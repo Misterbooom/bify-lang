@@ -52,6 +52,14 @@ public class MemberAccessGen(CodeGenContext ctx) : CodeGenBase(ctx)
             return false;
 
         string memberName = ExpectMemberName(memberAccess);
+        if (TypeResolver.TryResolveIdentifier(memberName, modId.Name, _ctx, out var identifier) && identifier is ICompositeType comp)
+        {
+
+            result = new TypedValue(null, new WrappedCompositeType(comp));
+            return true;
+        }
+        BifyDebug.Log($"ide: {identifier}");
+
         if (!moduleType.ModuleContext.CurrentScope.TryLookup(memberName, out var member))
             return Fail<bool>($"no member '{memberName}' in module '{modId.Name}'", DiagnosticKind.ATTRIBUTE, memberAccess);
 

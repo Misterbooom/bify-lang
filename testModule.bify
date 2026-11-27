@@ -1,1 +1,6 @@
 
+class BSI{
+    static func static(){
+        printf("yeah static");
+    }
+}

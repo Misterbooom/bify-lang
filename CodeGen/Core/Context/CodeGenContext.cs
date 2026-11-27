@@ -21,11 +21,14 @@ public class CodeGenContext : IDisposable
     public LLVMModuleRef Module { get; private set; }
     public LLVMBuilderRef Builder { get; private set; }
     public ModuleContext ModuleContext;
+
     public Scope CurrentScope
     {
         get => ModuleContext.CurrentScope;
         private set => ModuleContext.CurrentScope = value;
     }
+
+    public ICompositeType? CurrentCompositeType = null;
     public TypeRegistry TypeRegistry { get; private set; }
     public LoopContext LoopContext = new LoopContext(null, null, null, null);
     public BifyType FunctionReturnType;
@@ -178,7 +181,7 @@ public class CodeGenContext : IDisposable
     public LLVMModuleRef GenerateModule(AstModule rootModule)
     {
         var rootContext = new ModuleContext(this, rootModule.Name, rootModule.ModulePath);
-        var rootInfo = new ModuleInfo(rootModule.Name,  rootModule.ModulePath, rootModule, rootContext);
+        var rootInfo = new ModuleInfo(rootModule.Name, rootModule.ModulePath, rootModule, rootContext);
         var pool = new ModulePoolCollector(this).Collect(rootModule);
         ModuleInfo[] allModuleInfos = [.. pool, rootInfo];
         new ModuleLayoutBuilder(this).Build(allModuleInfos);

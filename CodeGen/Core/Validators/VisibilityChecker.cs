@@ -37,7 +37,7 @@ public static class VisibilityChecker
         {
             ctx.Fail(
                 $"cannot return private type '{returnType.Name}' from public function '{funcDecl.FunctionNameNode.Name}'",
-                DiagnosticKind.ACCESS_VIOLATION,
+                DiagnosticKind.ATTRIBUTE,
                 funcDecl.TypeNode);
         }
 
@@ -47,7 +47,7 @@ public static class VisibilityChecker
             {
                 ctx.Fail(
                     $"private type '{param.Type.Name}' in parameter '{param.Name}' of public function '{funcDecl.FunctionNameNode.Name}'",
-                    DiagnosticKind.ACCESS_VIOLATION,
+                    DiagnosticKind.ATTRIBUTE,
                     funcDecl.ArgumentsNode);
             }
         }
@@ -66,7 +66,7 @@ public static class VisibilityChecker
         {
             ctx.Error(
                 $"cannot return private type '{returnType.Name}' from {visibility} method '{declaringType.Name}.{funcDecl.FunctionNameNode.Name}'",
-                DiagnosticKind.ACCESS_VIOLATION,
+                DiagnosticKind.ATTRIBUTE,
                 funcDecl.TypeNode);
         }
 
@@ -76,7 +76,7 @@ public static class VisibilityChecker
             {
                 ctx.Error(
                     $"private type '{param.Type.Name}' in parameter '{param.Name}' of {visibility} method '{declaringType.Name}.{funcDecl.FunctionNameNode.Name}'",
-                    DiagnosticKind.ACCESS_VIOLATION,
+                    DiagnosticKind.ATTRIBUTE,
                     funcDecl.ArgumentsNode);
             }
         }
@@ -96,7 +96,7 @@ public static class VisibilityChecker
         string fieldName = varDecl.AssignmentNode.Left.Token.Value;
         ctx.Error(
             $"private type '{fieldType.Name}' in {visibility} field '{declaringType.Name}.{fieldName}'",
-            DiagnosticKind.ACCESS_VIOLATION,
+            DiagnosticKind.ATTRIBUTE,
             varDecl.Type);
     }
 
@@ -111,7 +111,7 @@ public static class VisibilityChecker
 
         ctx.Error(
             $"public class '{derivedType.Name}' cannot inherit from private class '{parentType.Name}'",
-            DiagnosticKind.ACCESS_VIOLATION,
+            DiagnosticKind.ATTRIBUTE,
             parentNode);
     }
 }

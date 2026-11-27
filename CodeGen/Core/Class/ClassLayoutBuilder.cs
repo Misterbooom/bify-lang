@@ -50,6 +50,7 @@ public class ClassLayoutBuilder(CodeGenContext ctx) : LayoutBuilder(ctx)
             {
                 _ctx.CurrentLine = info.ClassNode.LineNumber;
                 BuildBody(type, info);
+                BifyDebug.Log($"{type}");
             }
         }
     }
@@ -97,6 +98,9 @@ public class ClassLayoutBuilder(CodeGenContext ctx) : LayoutBuilder(ctx)
         ProcessFields(info, classType);
         ProcessMethods(info, classType);
         FinalizeStructBody(classType);
+
+        VTableBuilder.Build(classType.VTable, _ctx, type.Name);
+        classType.VTableGlobal = classType.VTable.GlobalValue;
     }
 
     private void InheritMembers(ClassType classType, AstNode fallbackNode)
@@ -107,9 +111,14 @@ public class ClassLayoutBuilder(CodeGenContext ctx) : LayoutBuilder(ctx)
 
         if (parent == null)
             return;
-        if (parent.Flags.HasFlag(TypeFlags.FINAL))
+        if (parent.Flags.HasFlag(TypeFlags.FINAL) )
         {
             _ctx.Error("cannot inherit from final class", DiagnosticKind.TYPE, fallbackNode);
+        }
+
+        if (parent.Flags.HasFlag(TypeFlags.STATIC))
+        {
+            _ctx.Error("cannot inherit from static class", DiagnosticKind.TYPE, fallbackNode);
         }
 
         foreach (var kvp in parent.Fields)
@@ -172,25 +181,28 @@ public class ClassLayoutBuilder(CodeGenContext ctx) : LayoutBuilder(ctx)
                 continue;
             }
             TryAddMethod(funcDecl, classType, name);
+
         }
 
-        if (!hasConstructor)
+        if (!hasConstructor && !classType.Flags.HasFlag(TypeFlags.STATIC))
         {
             SynthesizeConstructor(classType);
         }
 
+
         AllAbstractsImplemented(classType, info.ClassNode.NameNode);
     }
 
-    private bool AllAbstractsImplemented(ClassType classType, AstNode fallbackNode)
+
+    private void AllAbstractsImplemented(ClassType classType, AstNode fallbackNode)
     {
         if (classType.Flags.HasFlag(TypeFlags.ABSTRACT))
-            return true;
+            return;
 
         ClassType? parent = classType.Parent;
         if (parent == null)
         {
-            return true;
+            return;
         }
         foreach (var (parentMethodName, parentMethod) in parent.Methods)
         {
@@ -201,7 +213,7 @@ public class ClassLayoutBuilder(CodeGenContext ctx) : LayoutBuilder(ctx)
             }
         }
 
-        return false;
+        return;
     }
     private void TryAddMethod(AstFunctionDecl funcDecl, ClassType classType, string name)
     {
@@ -214,6 +226,7 @@ public class ClassLayoutBuilder(CodeGenContext ctx) : LayoutBuilder(ctx)
 
             if (classType.Methods.ContainsKey(name) && !method.IsOverride)
                 Fail($"duplicate method '{name}' in '{classType.FullName}'", DiagnosticKind.NAME, funcDecl);
+
 
             classType.Methods[name] = method;
         }
@@ -231,7 +244,19 @@ public class ClassLayoutBuilder(CodeGenContext ctx) : LayoutBuilder(ctx)
     }
     private void ProcessDestructor(ClassInfo info, ClassType classType, List<AstFunctionDecl> funcDecls)
     {
+
         var dtors = funcDecls.Where(f => f.FunctionNameNode.Name == DestructorSynthesizer.DestructorName).ToList();
+        if (classType.Flags.HasFlag(TypeFlags.STATIC) && dtors.Count != 0)
+        {
+            Error($"destructor in static class '{classType.Name}'.", DiagnosticKind.TYPE, dtors[0].FunctionNameNode);
+            return;
+        }
+
+        if (classType.Flags.HasFlag(TypeFlags.STATIC))
+        {
+            return;
+        }
+
         if (dtors.Count > 1)
             Error($"duplicate destructor in '{info.Name}'", DiagnosticKind.NAME, dtors[1]);
 
@@ -248,6 +273,7 @@ public class ClassLayoutBuilder(CodeGenContext ctx) : LayoutBuilder(ctx)
         }
 
         var method = ClassMemberCollector.CollectDestructorOrDefault(dtor, _ctx, classType);
+
         method.VTableIndex = VTableBuilder.ApplyDestructor(classType.VTable, method);
         classType.Methods[DestructorSynthesizer.DestructorName] = method;
     }

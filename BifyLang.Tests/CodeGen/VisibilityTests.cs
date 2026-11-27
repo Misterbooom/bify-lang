@@ -113,13 +113,13 @@ public class VisibilityTests : BifyTestBase
         private class Secret {}
         public func leak() -> Secret { return new Secret(); }
         func main() {}
-        """, DiagnosticKind.ACCESS_VIOLATION);
+        """, DiagnosticKind.ATTRIBUTE);
 
         AssertCompileError("""
         private struct SecretVal { mut x: int; }
         public func leak() -> SecretVal { return new SecretVal(x: 1); }
         func main() {}
-        """, DiagnosticKind.ACCESS_VIOLATION);
+        """, DiagnosticKind.ATTRIBUTE);
     }
 
     [Test]
@@ -129,13 +129,13 @@ public class VisibilityTests : BifyTestBase
         private class Secret {}
         public func take(s: Secret) {}
         func main() {}
-        """, DiagnosticKind.ACCESS_VIOLATION);
+        """, DiagnosticKind.ATTRIBUTE);
 
         AssertCompileError("""
         private struct SecretVal { mut x: int; }
         public func take(s: SecretVal) {}
         func main() {}
-        """, DiagnosticKind.ACCESS_VIOLATION);
+        """, DiagnosticKind.ATTRIBUTE);
     }
 
     [TestCase("public", TestName = "PublicClass_PublicMethod_ReturningPrivateType_Rejected")]
@@ -150,7 +150,7 @@ public class VisibilityTests : BifyTestBase
         func main() {}
         """;
 
-        AssertCompileError(code, DiagnosticKind.ACCESS_VIOLATION);
+        AssertCompileError(code, DiagnosticKind.ATTRIBUTE);
     }
 
     [TestCase("public", TestName = "PublicClass_PublicMethod_PrivateParam_Rejected")]
@@ -165,7 +165,7 @@ public class VisibilityTests : BifyTestBase
         func main() {}
         """;
 
-        AssertCompileError(code, DiagnosticKind.ACCESS_VIOLATION);
+        AssertCompileError(code, DiagnosticKind.ATTRIBUTE);
     }
 
     [Test]
@@ -179,7 +179,7 @@ public class VisibilityTests : BifyTestBase
         func main() {}
         """;
 
-        AssertCompileError(code, DiagnosticKind.ACCESS_VIOLATION);
+        AssertCompileError(code, DiagnosticKind.ATTRIBUTE);
     }
 
     [TestCase("public", TestName = "PublicClass_PublicField_PrivateType_Rejected")]
@@ -194,7 +194,7 @@ public class VisibilityTests : BifyTestBase
         func main() {}
         """;
 
-        AssertCompileError(code, DiagnosticKind.ACCESS_VIOLATION);
+        AssertCompileError(code, DiagnosticKind.ATTRIBUTE);
     }
 
     [Test]
@@ -206,7 +206,7 @@ public class VisibilityTests : BifyTestBase
             public mut v: SecretVal;
         }
         func main() {}
-        """, DiagnosticKind.ACCESS_VIOLATION);
+        """, DiagnosticKind.ATTRIBUTE);
 
         AssertCompileError("""
         private struct SecretVal { mut x: int; }
@@ -214,7 +214,7 @@ public class VisibilityTests : BifyTestBase
             public func leak() -> SecretVal { return new SecretVal(x: 1); }
         }
         func main() {}
-        """, DiagnosticKind.ACCESS_VIOLATION);
+        """, DiagnosticKind.ATTRIBUTE);
     }
 
     [Test]
@@ -226,6 +226,6 @@ public class VisibilityTests : BifyTestBase
         func main() {}
         """;
 
-        AssertCompileError(code, DiagnosticKind.ACCESS_VIOLATION);
+        AssertCompileError(code, DiagnosticKind.ATTRIBUTE);
     }
 }

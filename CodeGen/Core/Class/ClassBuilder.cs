@@ -20,12 +20,12 @@ public class ClassBuilder(CodeGenContext ctx) : CodeGenBase(ctx)
 
     private unsafe LLVMValueRef BuildClassInstance(ClassType classType)
     {
-        var vtableGlobal = classType.VTableGlobal.Handle != IntPtr.Zero
-            ? classType.VTableGlobal
-            : classType.VTable.GlobalValue;
-
+        if (classType.VTableGlobal == null || classType.VTableGlobal.Handle == IntPtr.Zero)
+        {
+            throw new ArgumentException("Class vtable is not initialized");
+        }
         var sizeVal = LLVM.SizeOf(classType.StructType);
-        var rawPtr = _ctx.HeapControl.BuildAlloc(sizeVal, vtableGlobal);
+        var rawPtr = _ctx.HeapControl.BuildAlloc(sizeVal, classType.VTableGlobal);
         return rawPtr;
     }
 

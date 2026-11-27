@@ -30,4 +30,7 @@ public class ClassType(string name, string fullName, LLVMTypeRef pointerType, LL
         }
         return false;
     }
+    public override string ToString() =>
+        $"class {FullName}{(Parent != null ? $" : {Parent.FullName}" : "")} " +
+        $"[F:{Fields.Count}, M:{Methods.Count}, T:{MinType}..{MaxType}{( $", {Flags}")}]";
 }

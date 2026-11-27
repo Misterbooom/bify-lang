@@ -5,6 +5,7 @@ using BifyLang.CodeGen.Core.Types.Data;
 using BifyLang.CodeGen.Core.Validators;
 using BifyLang.Exceptions;
 using LLVMSharp.Interop;
+using Microsoft.VisualBasic.CompilerServices;
 
 namespace BifyLang.CodeGen.Core.Class;
 
@@ -34,13 +35,11 @@ public static class MemberResolver
         return true;
     }
 
-    public static void CheckAccess(CodeGenContext ctx, ICompositeType compositeType, AccessLevel accessLevel, string memberName)
+    public static void CheckAccess(CodeGenContext ctx, ICompositeType compositeType, AccessLevel accessLevel, string memberName, bool isStatic=false)
     {
         if (accessLevel == AccessLevel.PRIVATE)
         {
-            if (!ctx.CurrentScope.TryLookup("this", out var thisSym) ||
-                thisSym.Type is not ICompositeType ct ||
-                ct.FullName != compositeType.FullName)
+            if (ctx.CurrentCompositeType?.FullName != compositeType.FullName)
             {
                 ctx.Fail($"cannot access private member '{memberName}' of '{compositeType.FullName}'", DiagnosticKind.ATTRIBUTE);
             }
@@ -48,7 +47,7 @@ public static class MemberResolver
         else if (accessLevel == AccessLevel.PROTECTED)
         {
             bool allowed = false;
-            if (ctx.CurrentScope.TryLookup("this", out var thisSym) && thisSym.Type is ClassType ct)
+            if (ctx.CurrentCompositeType is ClassType ct)
             {
                 if (ctx.TypeRegistry.TryGetType(compositeType.FullName, out var declType) && declType is ClassType declClassType)
                 {

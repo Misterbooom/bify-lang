@@ -238,7 +238,7 @@ namespace BifyLang.Ast
                 {
                     Fail($"Invalid syntax.", DiagnosticKind.SYNTAX, Nodes[0].Token);
                 }
-                Fail("Opa 2 node", DiagnosticKind.SYNTAX, Nodes[1].Token);
+                Fail("Invalid syntax.", DiagnosticKind.SYNTAX, Nodes[1].Token);
             }
             Token? errToken = Nodes.Count > 1 ? Nodes[1].Token : Nodes.FirstOrDefault()?.Token;
             Fail("Invalid Syntax.", DiagnosticKind.SYNTAX, errToken);

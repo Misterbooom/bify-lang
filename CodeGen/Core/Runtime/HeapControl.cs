@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using BifyLang.CodeGen.Core.Context;
+using BifyLang.CodeGen.Core.Types.Data;
 using BifyLang.CodeGen.Core.Types.Service;
 using LLVMSharp.Interop;
 

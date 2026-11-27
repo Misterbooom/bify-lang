@@ -1,20 +1,8 @@
-import "testModule.bify";
-abstract class A{
-    abstract func gaw();
-}
-abstract class B: A{
-    final override func gaw(){
-    
+class Secret {
+    private static func hidden() -> int {
+        return 33;
     }
-    
 }
-abstract class C:B{
-    override func gaw(){
-    
-    }
-    
-}
-
-func main()->int {
-    return 0;
+func main() -> int {
+    return Secret.hidden();
 }

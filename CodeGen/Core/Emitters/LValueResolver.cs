@@ -102,6 +102,13 @@ public class LValueResolver(CodeGenContext ctx) : CodeGenBase(ctx)
             return false;
         }
 
+        if (memberAccess.Left is AstIdentifier classId && TypeResolver.TryResolve(classId, _ctx, out var type)  && type is ClassType classType )
+        {
+            if (strict)
+                Fail($"cannot assign to class member '{memberAccess.Right.Token.Value}'", DiagnosticKind.TYPE, memberAccess);
+            return false;
+        }
+
         if (memberAccess.Right is not AstIdentifier memberId)
         {
             if (strict)

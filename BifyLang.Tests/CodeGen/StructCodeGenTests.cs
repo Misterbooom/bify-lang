@@ -116,7 +116,7 @@ public class StructCodeGenTests : BifyTestBase
         struct Vec2 {
             mut x: int;
             mut y: int;
-            func sum() -> int {
+            public func sum() -> int {
                 return x + y;
             }
         }
@@ -149,13 +149,13 @@ public class StructCodeGenTests : BifyTestBase
         string code = """
         struct Counter {
             mut value: int;
-            func add(n: int) {
+            public func add(n: int) {
                 value = value + n;
             }
-            func addViaThis(n: int) {
+            public func addViaThis(n: int) {
                 this.value = this.value + n;
             }
-            func clone() -> Counter {
+            public func clone() -> Counter {
                 return this;
             }
         }
@@ -180,7 +180,7 @@ public class StructCodeGenTests : BifyTestBase
         struct Vec2 {
             mut x: int;
             mut y: int;
-            func translate(dx: int, dy: int) {
+            public func translate(dx: int, dy: int) {
                 x = x + dx;
                 y = y + dy;
             }
@@ -209,7 +209,7 @@ public class StructCodeGenTests : BifyTestBase
         struct Vec2 {
             mut x: int;
             mut y: int;
-            func sum() -> int {
+            public func sum() -> int {
                 return x + y;
             }
         }

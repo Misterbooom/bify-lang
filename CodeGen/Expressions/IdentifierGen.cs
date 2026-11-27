@@ -45,6 +45,11 @@ public static class IdentifierGen
             return new TypedValue(default, moduleType);
         }
 
+        if (TypeResolver.TryResolve(identifier, ctx, out var type) && type is ICompositeType compType)
+        {
+            return new TypedValue(default, new WrappedCompositeType(compType));
+        }
+
         return ctx.Fail<TypedValue>($"undeclared identifier '{name}'", DiagnosticKind.NAME, identifier);
     }
 

@@ -21,6 +21,7 @@ public class ClassGen(CodeGenContext ctx) : CodeGenBase(ctx)
         ClassType classType = (ClassType)type;
         MethodEmitter methodEmitter = new(_ctx);
 
+        _ctx.CurrentCompositeType = classType;
         foreach (var method in classType.Methods.Values)
         {
             if (method.IsPoison)
@@ -34,8 +35,7 @@ public class ClassGen(CodeGenContext ctx) : CodeGenBase(ctx)
             {
             }
         }
+        _ctx.CurrentCompositeType = null;
 
-        VTableBuilder.Build(classType.VTable, _ctx, classNode.NameNode.Token.Value);
-        classType.VTableGlobal = classType.VTable.GlobalValue;
     }
 }

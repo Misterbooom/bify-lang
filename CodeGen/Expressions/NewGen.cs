@@ -38,6 +38,11 @@ public class NewGen(CodeGenContext ctx) : CodeGenBase(ctx)
         {
             _ctx.Fail($"cannot instantiate abstract class '{type.Name}'", DiagnosticKind.CANNOT_INSTANTIATE_ABSTRACT_CLASS, callSite);
         }
+
+        if (type.Flags.HasFlag(TypeFlags.STATIC))
+        {
+            _ctx.Fail($"cannot instantiate static class '{type.Name}'", DiagnosticKind.CANNOT_INSTANTIATE_STATIC_CLASS, callSite);
+        }
         var instancePtr = new ClassBuilder(_ctx).BuildInstance(type);
         InvokeConstructor(type, instancePtr, argsNode, callSite);
 

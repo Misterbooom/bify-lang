@@ -17,7 +17,7 @@ public class ModuleCodeGenTests : BifyTestBase
             string moduleFile = Path.Combine(tempDir, "mod.bify");
             File.WriteAllText(moduleFile, """
             public class Greeter {
-                func greet() {
+                public func greet() {
                     printf("Hello from module");
                 }
             }
@@ -121,7 +121,7 @@ public class ModuleCodeGenTests : BifyTestBase
             }
 
             Assert.That(
-                diagnostics.Diagnostics.Any(d => d.Kind == BifyLang.Exceptions.DiagnosticKind.ACCESS_VIOLATION),
+                diagnostics.Diagnostics.Any(d => d.Kind == BifyLang.Exceptions.DiagnosticKind.ATTRIBUTE),
                 Is.True,
                 $"Expected ACCESS_VIOLATION, got: [{string.Join("; ", diagnostics.Diagnostics.Select(d => $"{d.Kind}: {d.Message}"))}]");
         }

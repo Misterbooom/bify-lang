@@ -1,7 +1,7 @@
 using BifyLang.CodeGen.Core.Types.Data;
 using LLVMSharp.Interop;
 
-namespace BifyLang.CodeGen.Core.Types.Service;
+namespace BifyLang.CodeGen.Core.Types.Data;
 
 public readonly struct TypedValue(LLVMValueRef value, BifyType type, bool isWeak = false)
 {

@@ -47,12 +47,32 @@ public class CallGen(CodeGenContext ctx) : CodeGenBase(ctx)
 
         if (method.IsPoison)
             return AbortPoison<TypedValue>();
+        if (!method.IsStatic && !thisPtr.HasValue)
+        {
+            return Fail<TypedValue>($"cannot call instance method '{id.Name}' on static type '{type.Name}'", DiagnosticKind.TYPE, call);
+        }
 
-        MemberResolver.CheckAccess(_ctx, method.DeclaringType, method.AccessLevel, method.Name);
+        MemberResolver.CheckAccess(_ctx, method.DeclaringType, method.AccessLevel, method.Name, method.IsStatic);
 
-        var callee = ResolveMethodCallee(type, thisPtr!.Value, method);
         var args = ResolveArgs(call, method.Signature);
-        LLVMValueRef[] raw = [thisPtr.Value, .. args.Select(a => a.Value.Value)];
+
+        LLVMValueRef callee;
+        LLVMValueRef[] raw;
+        if (method.IsStatic && thisPtr.HasValue)
+        {
+            return Fail<TypedValue>($"cannot call static method '{method.Name} on instance of '{method.DeclaringType.Name}'", DiagnosticKind.TYPE,  call.CallableName);
+        }
+        else if (method.IsStatic)
+        {
+            callee = method.FunctionValue;
+            raw = [.. args.Select(a => a.Value.Value)];
+        }
+
+        else
+        {
+            callee = ResolveMethodCallee(type, thisPtr!.Value, method);
+            raw = [thisPtr.Value, .. args.Select(a => a.Value.Value)];
+        }
 
         var res = _ctx.Builder.BuildCall2(method.Signature.Type, callee, raw);
         return new TypedValue(res, method.Signature.ReturnType);
@@ -64,7 +84,7 @@ public class CallGen(CodeGenContext ctx) : CodeGenBase(ctx)
             return Fail<TypedValue>($"no function '{name}' in module '{mod.Name}'", DiagnosticKind.ATTRIBUTE, call);
 
         if (sym.AccessLevel == AccessLevel.PRIVATE)
-            return Fail<TypedValue>($"cannot access private function '{name}' in module '{mod.Name}'", DiagnosticKind.ACCESS_VIOLATION, call.CallableName);
+            return Fail<TypedValue>($"cannot access private function '{name}' in module '{mod.Name}'", DiagnosticKind.ATTRIBUTE, call.CallableName);
 
         if (sym.Type is not CallableType fn)
             return Fail<TypedValue>($"'{name}' in module '{mod.Name}' is not callable", DiagnosticKind.TYPE, call);
@@ -111,6 +131,12 @@ public class CallGen(CodeGenContext ctx) : CodeGenBase(ctx)
         {
             return (null, null, moduleType);
         }
+
+        if (left.Type is WrappedCompositeType wrappedCompositeType)
+        {
+            return (null, wrappedCompositeType.Type, null);
+        }
+
         return Fail<(LLVMValueRef?, ICompositeType?, ModuleType?)>(
             $"Cannot call member on non-composite type '{left.Type.Name}'", DiagnosticKind.TYPE, call);
     }

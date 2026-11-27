@@ -10,7 +10,7 @@ namespace BifyLang.CodeGen.Core.Validators;
 public static class FlagChecker
 {
     private static readonly HashSet<string> _functionFlags = ["public", "private"];
-    private static readonly HashSet<string> _methodFlags = ["public", "private", "protected", "virtual", "override", "abstract", "final"];
+    private static readonly HashSet<string> _methodFlags = ["public", "private", "protected", "virtual", "override", "abstract", "final", "static"];
     private static readonly HashSet<string> _structMethodFlags = ["public", "private"];
     private static readonly HashSet<string> _attributeFlags = ["public", "private", "protected", "weak", "mut", "val"];
     private static readonly HashSet<string> _structAttributeFlags = ["public", "private", "mut", "val"];
@@ -43,6 +43,14 @@ public static class FlagChecker
         ["abstract"] = TypeFlags.ABSTRACT,
     };
 
+    private static readonly Dictionary<string, string[]> _conflictingMap = new()
+    {
+        ["virtual"] = ["override"],
+        ["abstract"] = ["override", "final"],
+        ["override"] = ["virtual", "abstract"],
+        ["final"] = ["abstract"],
+        ["static"]=["virtual", "override", "final", "abstract"]
+    };
     public static bool ParseFieldFlags(
         AstFlag? flagNode,
         bool isStruct,
@@ -50,9 +58,10 @@ public static class FlagChecker
         out FieldFlags flags,
         out string? error)
     {
-        var list = GetFlags(flagNode);
-        accessLevel = ParseAccessLevel(list);
-        flags = MapFlags(list, _fieldMap);
+        var list = flagNode?.ToStringArray() ?? [];
+
+        accessLevel = ParseAccessLevel([.. list], isStruct ? AccessLevel.PUBLIC:AccessLevel.PRIVATE);
+        flags = MapFlags([..list], _fieldMap);
         return isStruct ? CheckStructAttributeFlags(list, out error) : CheckAttributeFlags(list, out error);
     }
 
@@ -63,8 +72,8 @@ public static class FlagChecker
         out MethodFlags flags,
         out string? error)
     {
-        var list = GetFlags(flagNode);
-        accessLevel = ParseAccessLevel(list);
+        var list = flagNode?.ToStringArray().ToList() ?? [];
+        accessLevel = ParseAccessLevel(list, AccessLevel.PRIVATE);
         flags = MapFlags(list, _methodMap);
         return isStruct ? CheckStructMethodFlags(list, out error) : CheckMethodFlags(list, out error);
     }
@@ -75,7 +84,7 @@ public static class FlagChecker
         out TypeFlags flags,
         out string? error)
     {
-        var list = GetFlags(flagNode);
+        var list = flagNode?.ToStringArray().ToList() ?? [];
         flags = MapFlags(list, _typeMap);
         return isStruct ? CheckStructFlags(list, out error) : CheckClassFlags(list, out error);
     }
@@ -85,22 +94,22 @@ public static class FlagChecker
 
     public static bool CheckMethodFlags(IEnumerable<string> flags, out string? error)
     {
-        var list = flags as ICollection<string> ?? flags.ToList();
+        var list = flags as ICollection<string> ?? [.. flags];
         if (!Check(list, _methodFlags, "method", out error))
             return false;
 
-        if (list.Contains("virtual") && list.Contains("override"))
-            return Fail("conflicting flags 'virtual' and 'override'", out error);
-
-        if (list.Contains("abstract") && list.Contains("override"))
-            return Fail("conflicting flags 'abstract' and 'override'", out error);
-
-        if (list.Contains("abstract") && list.Contains("final"))
-            return Fail("conflicting flags 'abstract' and 'final'", out error);
 
         if (list.Contains("final") && !list.Contains("override"))
             return Fail("'final' method requires 'override'", out error);
-
+        foreach (var flag in flags)
+        {
+            if (_conflictingMap.TryGetValue(flag, out var conflicts))
+            {
+                var conflict = conflicts.FirstOrDefault(list.Contains);
+                if (conflict != null)
+                    return Fail($"conflicting flags '{flag}' and '{conflict}'", out error);
+            }
+        }
         return true;
     }
 
@@ -109,13 +118,19 @@ public static class FlagChecker
 
     public static bool CheckClassFlags(IEnumerable<string> flags, out string? error)
     {
-        var list = flags as ICollection<string> ?? flags.ToList();
+        var list = flags as ICollection<string> ?? [.. flags];
         if (!Check(list, _classFlags, "class", out error))
             return false;
 
-        if (list.Contains("abstract") && list.Contains("final"))
-            return Fail("conflicting flags 'abstract' and 'final'", out error);
-
+        foreach (var flag in flags)
+        {
+            if (_conflictingMap.TryGetValue(flag, out var conflicts))
+            {
+                var conflict = conflicts.FirstOrDefault(list.Contains);
+                if (conflict != null)
+                    return Fail($"conflicting flags '{flag}' and '{conflict}'", out error);
+            }
+        }
         return true;
     }
 
@@ -134,14 +149,13 @@ public static class FlagChecker
     public static bool CheckStructFlags(IEnumerable<string> flags, out string? error) =>
         Check(flags, _structFlags, "struct", out error);
 
-    private static List<string> GetFlags(AstFlag? node) =>
-        node?.Flags?.Select(f => f.Token.Value).ToList() ?? [];
 
-    private static AccessLevel ParseAccessLevel(List<string> list)
+    private static AccessLevel ParseAccessLevel(List<string> list, AccessLevel defaultLevel)
     {
         if (list.Contains("private")) return AccessLevel.PRIVATE;
         if (list.Contains("protected")) return AccessLevel.PROTECTED;
-        return AccessLevel.PUBLIC;
+        if (list.Contains("public")) return AccessLevel.PUBLIC;
+        return defaultLevel;
     }
 
     private static T MapFlags<T>(List<string> list, Dictionary<string, T> map) where T : struct, Enum

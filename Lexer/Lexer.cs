@@ -5,7 +5,7 @@ using BifyLang.Exceptions;
 
 namespace BifyLang.Lexer
 {
-    public partial class MyLexer
+    public  class MyLexer
     {
         private int _position;
         private readonly string _code;

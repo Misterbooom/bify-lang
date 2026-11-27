@@ -52,6 +52,7 @@ public static class ClassMemberCollector
 
     public static ClassMethod CollectMethod(AstFunctionDecl funcDecl, CodeGenContext ctx, ICompositeType classType)
     {
+
         string name = funcDecl.FunctionNameNode.Name;
         if (!FlagChecker.ParseMethodFlags(funcDecl.FlagNode, classType is StructType, out var accessLevel, out var methodFlags, out var error))
             ctx.Error(error ?? "invalid method flags", DiagnosticKind.ATTRIBUTE, funcDecl);
@@ -63,7 +64,12 @@ public static class ClassMemberCollector
         var returnType = ResolveMethodReturnType(funcDecl, ctx, name, parameters, ref methodFlags);
         VisibilityChecker.CheckMethodSignature(ctx, classType, accessLevel, returnType, parameters, funcDecl);
 
-        var paramTypes = new List<LLVMTypeRef> { LLVMTypeRef.CreatePointer(ctx.Context.Int8Type, 0) };
+
+        var paramTypes = new List<LLVMTypeRef>{};
+        if (!methodFlags.HasFlag(MethodFlags.STATIC))
+        {
+            paramTypes.Add(LLVMTypeRef.CreatePointer(ctx.Context.Int8Type, 0));
+        }
         paramTypes.AddRange(parameters.Select(p => p.Type.Type));
         var mangledName = NameMangler.GenerateMethodName(ctx.ModuleContext.Name, classType.Name, name);
         var funcType = LLVMTypeRef.CreateFunction(returnType.Type, paramTypes.ToArray(), false);
@@ -73,6 +79,14 @@ public static class ClassMemberCollector
         if (methodFlags.HasFlag(MethodFlags.ABSTRACT) && !classType.Flags.HasFlag(TypeFlags.ABSTRACT))
         {
             ctx.Error("abstract method in non-abstract class", DiagnosticKind.TYPE, funcDecl.FlagNode!.Flags.First(i => i.Token.Value == "abstract"));
+        }
+        if (classType.Flags.HasFlag(TypeFlags.STATIC) && !methodFlags.HasFlag(MethodFlags.STATIC))
+        {
+            ctx.Error($"non-static method '{mangledName}' in static class '{classType.Name}'", DiagnosticKind.NAME, funcDecl.FunctionNameNode);
+        }
+        if (classType.Flags.HasFlag(TypeFlags.STATIC) && name == "constructor")
+        {
+            ctx.Error($"constructor in static class '{classType.Name}'" ,  DiagnosticKind.TYPE, funcDecl.FunctionNameNode);
         }
 
         return new ClassMethod(name, signature, functionValue, accessLevel, -1, classType, funcDecl.BlockNode, methodFlags, parameters);
@@ -93,6 +107,7 @@ public static class ClassMemberCollector
 
         try
         {
+
             return CollectMethod(dtorNode, ctx, classType);
         }
         catch (BifyCompilationException)
@@ -112,9 +127,10 @@ public static class ClassMemberCollector
         {
             if (methodFlags.HasFlag(MethodFlags.VIRTUAL) ||
                 methodFlags.HasFlag(MethodFlags.OVERRIDE) ||
-                methodFlags.HasFlag(MethodFlags.ABSTRACT))
+                methodFlags.HasFlag(MethodFlags.ABSTRACT) ||
+                methodFlags.HasFlag(MethodFlags.STATIC))
             {
-                ctx.Fail("constructor cannot be 'virtual', 'override', or 'abstract'", DiagnosticKind.TYPE, funcDecl);
+                ctx.Fail("constructor cannot be 'virtual', 'override','static', or 'abstract'", DiagnosticKind.TYPE, funcDecl);
             }
 
             return BifyType.CreateVoid(ctx);
@@ -122,6 +138,10 @@ public static class ClassMemberCollector
 
         if (name == "destructor")
         {
+            if (methodFlags.HasFlag(MethodFlags.STATIC))
+            {
+                ctx.Fail("constructor cannot be 'static'", DiagnosticKind.TYPE, funcDecl);
+            }
             if (parameters.Count > 0)
                 ctx.Fail("destructor cannot take parameters", DiagnosticKind.SYNTAX, funcDecl);
 

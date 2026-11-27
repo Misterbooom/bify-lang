@@ -24,6 +24,7 @@ public class FunctionBodyEmitter(CodeGenContext ctx) : CodeGenBase(ctx)
         bool isMethod = false,
         bool isConstructor = false,
         bool isDestructor = false,
+        bool isStatic = false,
         ICompositeType? declaringClass = null)
     {
         LLVMBasicBlockRef? dtorCleanup = null;
@@ -38,7 +39,7 @@ public class FunctionBodyEmitter(CodeGenContext ctx) : CodeGenBase(ctx)
         using (_ctx.EnterScope())
         {
             _ctx.CurrentScope.FunctionName = function.Name;
-            BindParameters(function, parameters, isMethod, declaringClass);
+            BindParameters(function, parameters, isMethod, declaringClass, isStatic);
             _ctx.CurrentScope.IsDestructor = isDestructor;
             if (isConstructor && declaringClass != null)
             {
@@ -117,7 +118,7 @@ public class FunctionBodyEmitter(CodeGenContext ctx) : CodeGenBase(ctx)
         _ctx.Builder.BuildCall2(dtorType, parentDtor, [thisVal]);
     }
 
-    private void BindParameters(LLVMValueRef function, IReadOnlyList<ParameterInfo> parameters, bool isMethod, ICompositeType? declaringClass)
+    private void BindParameters(LLVMValueRef function, IReadOnlyList<ParameterInfo> parameters, bool isMethod, ICompositeType? declaringClass, bool isStatic = false)
     {
         for (uint i = 0; i < parameters.Count; i++)
         {
@@ -137,7 +138,7 @@ public class FunctionBodyEmitter(CodeGenContext ctx) : CodeGenBase(ctx)
                 ptr = alloca;
             }
 
-            bool isThisParam = isMethod && i == 0;
+            bool isThisParam = isMethod && i == 0 && !isStatic;
 
             if (param.Type.IsReference && !isThisParam)
             {
