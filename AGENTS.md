@@ -63,7 +63,11 @@ Target **LLVM 20+ / 23+ with Opaque Pointers (`ptr`)**. Typed pointers (`i8*`, `
 - **Multi-Stage Poison & Recovery Boundaries:**
     - **Lexer (`TokenType.POISON`, `Token.IsPoison`):** Record `DiagnosticKind.Syntax`, emit a poison token (`TokenType.POISON`, or `TokenType.STRING` with `IsPoison = true` on unclosed strings while rewinding `\n`), and continue lexing.
     - **AST (`AstPoison`, `AstNode.IsPoison`):** Catch `BifyCompilationException` at line/statement/declaration boundaries (`AstTree.ParseTokens`, `VariableDeclarationHandler`, `FunctionHandler` which still parses function bodies, `ClassHandler`), emit `AstPoison` or set `IsPoison = true`, and continue parsing.
-    - **CodeGen (`Symbol.IsPoison`, `ClassField.IsPoison`, `ClassMethod.IsPoison`):** Guard `VariableDeclGen`, `ModuleLayoutBuilder`, `FunctionGen`, `ClassMemberCollector`, `Scope.ReleaseLocals` (`DefinePoison` skips ARC cleanup), and dispatchers against `AstPoison` / `.IsPoison`; call `AbortPoison` when referencing poisoned symbols or members to suppress cascading errors (`Variable '...' is not defined`). Isolate failures at `StatementDispatcher.EmitStatementSafely`, `DeclarationDispatcher.EmitModule`, and `ClassGen.EmitClass`.
+    - **CodeGen (`Symbol.IsPoison`, `ClassField.IsPoison`, `ClassMethod.IsPoison`):** Guard `VariableDeclGen`, `ModuleLayoutBuilder`, `FunctionGen`, `ClassMemberCollector`, `Scope.ReleaseLocals` (`DefinePoison` skips ARC cleanup), and dispatchers against `AstPoison` / `.IsPoison`; call `AbortPoison` when referencing poisoned symbols or members to suppress cascading errors (`undeclared identifier '...'`). Isolate failures at `StatementDispatcher.EmitStatementSafely`, `DeclarationDispatcher.EmitModule`, and `ClassGen.EmitClass`.
+- **Error Message Style (Zig-Style):**
+    - Terse, single-clause, all lowercase start, no trailing `.`, `!`, or `\r\n`, and no contractions (`cannot`, not `Can't`).
+    - Wrap identifiers, types, tokens, operators, and flags in `'single quotes'` (`'...'`).
+    - Prefer standard phrasing: `undeclared identifier '...'`, `unknown type '...'`, `no member '...' in '...'`, `duplicate ... '...'`, `expected ..., found ...`, `cannot ...`, `conflicting flags '...' and '...'`.
 
 ## 6. COMMIT MESSAGE CONVENTIONS
 - Use Conventional Commits format: `<type>(<scope>): <description>` (or `<type>: <description>` when no single scope applies).
