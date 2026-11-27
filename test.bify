@@ -1,8 +1,10 @@
+class Foo{
+
+}
 class Secret {
-    private static func hidden() -> int {
-        return 33;
-    }
+    public static mut staticValue:int = new Foo();
 }
 func main() -> int {
-    return Secret.hidden();
+    printf("%d", Secret.staticValue);
+    return 0;
 }

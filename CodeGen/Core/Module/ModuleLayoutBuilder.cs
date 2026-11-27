@@ -10,11 +10,13 @@ namespace BifyLang.CodeGen.Core.Module;
 public class ModuleLayoutBuilder:LayoutBuilder
 {
     private readonly LayoutBuilder[] _builders;
+    private readonly ClassLayoutBuilder _classLayoutBuilder;
     public ModuleLayoutBuilder(CodeGenContext ctx) : base(ctx)
     {
+        _classLayoutBuilder = new ClassLayoutBuilder(_ctx);
         _builders = [
             new StructLayoutBuilder(_ctx),
-            new ClassLayoutBuilder(_ctx),
+            _classLayoutBuilder,
             new FunctionLayoutBuilder(_ctx),
         ];
     }
@@ -41,6 +43,10 @@ public class ModuleLayoutBuilder:LayoutBuilder
             builder.Build(modules);
         }
         BuildModuleLayout(modules);
+
+        var statics = _classLayoutBuilder.GetStaticFields();
+        _ctx.StaticLifeCycle.GenerateInitStatics(statics);
+        _ctx.StaticLifeCycle.GenerateCleanUpStatics(statics);
     }
 
 

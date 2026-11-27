@@ -74,7 +74,13 @@ public class MemberAccessGen(CodeGenContext ctx) : CodeGenBase(ctx)
     {
         var target = new ExpressionDispatcher(_ctx).EmitExpression(memberAccess.Left);
         if (target.Type is not ICompositeType compositeType)
-            return Fail<(TypedValue, ICompositeType, string)>($"type '{target.Type.Name}' has no members", DiagnosticKind.TYPE, memberAccess);
+        {
+            if (target.Type is WrappedCompositeType wpt)
+                compositeType = wpt.Type;
+            else
+                return Fail<(TypedValue, ICompositeType, string)>($"type '{target.Type.Name}' has no members",
+                    DiagnosticKind.TYPE, memberAccess);
+        }
 
         string memberName = ExpectMemberName(memberAccess);
         if (target.IsWeak)

@@ -37,4 +37,12 @@ public static class NameMangler
 
         return $"{moduleName}.{className}.vtable";
     }
+    public static string GenerateStaticFieldName(string moduleName, string className, string fieldName)
+    {
+        ArgumentException.ThrowIfNullOrEmpty(moduleName);
+        ArgumentException.ThrowIfNullOrEmpty(className);
+        ArgumentException.ThrowIfNullOrEmpty(fieldName);
+
+        return $"{moduleName}.{className}.static.{fieldName}";
+    }
 }

@@ -38,6 +38,8 @@ public class ClassLayoutBuilder(CodeGenContext ctx) : LayoutBuilder(ctx)
                 }
             }
         }
+
+
     }
 
     public override void Build(ModuleInfo[] modules)
@@ -50,10 +52,16 @@ public class ClassLayoutBuilder(CodeGenContext ctx) : LayoutBuilder(ctx)
             {
                 _ctx.CurrentLine = info.ClassNode.LineNumber;
                 BuildBody(type, info);
-                BifyDebug.Log($"{type}");
             }
         }
     }
+
+    public ClassField[] GetStaticFields() =>
+        _built
+            .Where(c => c.Type is not null)
+            .SelectMany(c => c.Type!.Fields.Values)
+            .Where(f => f.IsStatic && !f.IsPoison)
+            .ToArray();
 
     private ClassType DeclareOpaque(ClassInfo info)
     {
@@ -81,7 +89,7 @@ public class ClassLayoutBuilder(CodeGenContext ctx) : LayoutBuilder(ctx)
         };
 
         if (parent != null)
-            Validators.VisibilityChecker.CheckInheritance(_ctx, classType, parent, info.ClassNode.ParentNode);
+            VisibilityChecker.CheckInheritance(_ctx, classType, parent, info.ClassNode.ParentNode);
 
         _ctx.TypeRegistry.Register(mangledName, classType);
         _ctx.ModuleContext.TypesInfo[mangledName] = classType;
@@ -101,6 +109,8 @@ public class ClassLayoutBuilder(CodeGenContext ctx) : LayoutBuilder(ctx)
 
         VTableBuilder.Build(classType.VTable, _ctx, type.Name);
         classType.VTableGlobal = classType.VTable.GlobalValue;
+
+
     }
 
     private void InheritMembers(ClassType classType, AstNode fallbackNode)
@@ -153,7 +163,9 @@ public class ClassLayoutBuilder(CodeGenContext ctx) : LayoutBuilder(ctx)
                 continue;
             }
 
-            classType.Fields.Add(name, ClassMemberCollector.CollectFieldOrPoison(varDecl, _ctx, classType, name, nextIndex++));
+            var field = ClassMemberCollector.CollectFieldOrPoison(varDecl, _ctx, classType, name, nextIndex++);
+
+            classType.Fields.Add(name, field);
         }
     }
 

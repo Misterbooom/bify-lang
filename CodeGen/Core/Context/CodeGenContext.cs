@@ -4,6 +4,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using BifyLang.Ast;
 using BifyLang.CodeGen.Core.Class;
+using BifyLang.CodeGen.Core.Emitters;
 using BifyLang.CodeGen.Core.Module;
 using BifyLang.CodeGen.Core.Runtime;
 using BifyLang.CodeGen.Core.Types.Data;
@@ -34,6 +35,7 @@ public class CodeGenContext : IDisposable
     public BifyType FunctionReturnType;
     public readonly HeapControl HeapControl;
     public readonly DiagnosticBag Diagnostics;
+    public readonly StaticLifeCycle StaticLifeCycle;
     public int CurrentLine;
     public readonly Dictionary<string, ModuleType> ModulesMap = [];
 
@@ -46,7 +48,10 @@ public class CodeGenContext : IDisposable
         ModuleContext = new ModuleContext(this, "main", "");
         TypeRegistry = new TypeRegistry(this);
         HeapControl = new HeapControl(this);
+        StaticLifeCycle = new StaticLifeCycle(this);
         HeapControl.DefineRuntimeFunctions();
+        StaticLifeCycle.DeclareCleanUpStatics();
+        StaticLifeCycle.DeclareInitStatics();
     }
 
     private SourceLocation CreateLocation(AstNode? node)

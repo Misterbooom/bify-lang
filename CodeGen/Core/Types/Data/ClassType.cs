@@ -30,7 +30,16 @@ public class ClassType(string name, string fullName, LLVMTypeRef pointerType, LL
         }
         return false;
     }
-    public override string ToString() =>
-        $"class {FullName}{(Parent != null ? $" : {Parent.FullName}" : "")} " +
-        $"[F:{Fields.Count}, M:{Methods.Count}, T:{MinType}..{MaxType}{( $", {Flags}")}]";
+    public override string ToString()
+    {
+        string parent = Parent is not null ? $" : {Parent.FullName}" : "";
+        string flags = Flags != default ? $", {Flags}" : "";
+        string header = $"class {FullName}{parent} [F:{Fields.Count}, M:{Methods.Count}, T:{MinType}..{MaxType}{flags}]";
+
+        if (Fields.Count == 0)
+            return header;
+
+        string fields = string.Join("\n  ", Fields.Values);
+        return $"{header}\n  {fields}";
+    }
 }

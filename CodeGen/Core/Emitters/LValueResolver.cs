@@ -102,10 +102,10 @@ public class LValueResolver(CodeGenContext ctx) : CodeGenBase(ctx)
             return false;
         }
 
-        if (memberAccess.Left is AstIdentifier classId && TypeResolver.TryResolve(classId, _ctx, out var type)  && type is ClassType classType )
+        if (memberAccess.Left is AstIdentifier classId && TypeResolver.TryResolve(classId, _ctx, out var type)  && type is not ClassType classType )
         {
             if (strict)
-                Fail($"cannot assign to class member '{memberAccess.Right.Token.Value}'", DiagnosticKind.TYPE, memberAccess);
+                Fail($"cannot assign to  member '{memberAccess.Right.Token.Value}'", DiagnosticKind.TYPE, memberAccess);
             return false;
         }
 
@@ -131,6 +131,14 @@ public class LValueResolver(CodeGenContext ctx) : CodeGenBase(ctx)
         out LValue lvalue)
     {
         lvalue = default;
+        BifyDebug.Log($"lValie type =  {leftLValue.Type}, {memberName}");
+        if (leftLValue.Type is WrappedCompositeType wpt)
+        {
+            if (TryLookupField(memberAccess, wpt.Type, memberName, strict, out var staticField))
+            {
+                return true;
+            }
+        }
         if (leftLValue.Type is not ICompositeType compositeType)
         {
             if (strict)
@@ -138,6 +146,7 @@ public class LValueResolver(CodeGenContext ctx) : CodeGenBase(ctx)
                     memberAccess);
             return false;
         }
+
 
         if (!TryLookupField(memberAccess, compositeType, memberName, strict, out var field))
             return false;
@@ -155,6 +164,16 @@ public class LValueResolver(CodeGenContext ctx) : CodeGenBase(ctx)
         var leftVal = new ExpressionDispatcher(_ctx).EmitExpression(memberAccess.Left);
         if (leftVal.Type is StructType)
             Fail("cannot assign to field of temporary struct", DiagnosticKind.TYPE, memberAccess);
+        if (leftVal.Type is WrappedCompositeType wpt)
+        {
+            if (TryLookupField(memberAccess, wpt.Type, memberName, true, out var staticField) && staticField.IsStatic)
+            {
+                lvalue = BuildFieldLValue(wpt.Type, default, baseIsConst: false, staticField);
+                return true;
+            }
+
+            return Fail<bool>($"cannot find static field '{memberName}' in class '{wpt.Type.Name}'",DiagnosticKind.ATTRIBUTE, memberAccess.Left);
+        }
         if (leftVal.Type is not ClassType classType)
             return Fail<bool>($"type '{leftVal.Type.Name}' has no members", DiagnosticKind.TYPE,
                 memberAccess);
@@ -197,7 +216,7 @@ public class LValueResolver(CodeGenContext ctx) : CodeGenBase(ctx)
     private LValue BuildFieldLValue(ICompositeType compositeType, LLVMValueRef basePtr, bool baseIsConst,
         ClassField field)
     {
-        MemberResolver.CheckAccess(_ctx, field.DeclaringType ?? compositeType, field.AccessLevel, field.Name);
+        MemberResolver.CheckAccess(_ctx, compositeType, field.AccessLevel, field.Name);
         var fieldPtr = MemberResolver.ResolveFieldPtr(_ctx, compositeType, basePtr, field);
         bool isConst = compositeType is StructType ? baseIsConst || field.IsConst : field.IsConst;
         return new LValue(fieldPtr, field.Type, isConst, field.IsWeak, field, compositeType);

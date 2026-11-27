@@ -13,7 +13,8 @@ public struct ClassField(
     int index = -1,
     FieldFlags flags = FieldFlags.NONE,
     ICompositeType declaringType = null!,
-    bool isPoison = false)
+    bool isPoison = false,
+    LLVMValueRef globalValue = default)
 {
     public readonly string Name = name;
     public readonly BifyType Type = type;
@@ -24,10 +25,22 @@ public struct ClassField(
     public readonly ICompositeType DeclaringType = declaringType;
     public readonly AstNode? ValueNode = value;
     public readonly bool IsPoison = isPoison;
+    public readonly LLVMValueRef GlobalValue = globalValue;
 
     public bool IsConst => Flags.HasFlag(FieldFlags.CONST);
     public bool IsWeak => Flags.HasFlag(FieldFlags.WEAK);
     public bool IsStatic => Flags.HasFlag(FieldFlags.STATIC);
+    public override string ToString()
+    {
+        string flags = Flags != FieldFlags.NONE ? $"{Flags} " : "";
+        string owner = DeclaringType is not null ? $"{DeclaringType.FullName}." : "";
+        string slot = IsStatic
+            ? (GlobalValue != default ? " [global]" : " [uninit-static]")
+            : (Index >= 0 ? $" @{Index}" : "");
+        string poison = IsPoison ? " [POISON]" : "";
+
+        return $"{AccessLevel} {flags}{owner}{Name}: {Type}{slot}{poison}";
+    }
 }
 
 public struct ClassMethod(

@@ -59,8 +59,9 @@ public class BifyCompiler
             }
 
             LLVMValueRef userMain = FindUserMain(ctx, module);
-            if (userMain.Name != "main")
-                EmitEntryPointWrapper(ctx, module, userMain);
+            if (userMain.Name == "main")
+                userMain.Name = "__bify_user_main";
+            EmitEntryPointWrapper(ctx, module, userMain);
 
             if (!VerifyModule(module, out var error))
             {
@@ -140,18 +141,21 @@ public class BifyCompiler
 
         LLVMBasicBlockRef entry = mainWrapper.AppendBasicBlock("entry");
         ctx.Builder.PositionAtEnd(entry);
-
+        ctx.StaticLifeCycle.EmitCallInitStatics();
         if (userFnType.ReturnType == intType)
         {
             LLVMValueRef[] refs = [];
             LLVMValueRef exitCode = ctx.Builder.BuildCall2(userFnType, userMain, refs, "exit_code");
+            ctx.StaticLifeCycle.EmitCallCleanUpStatics();
             ctx.Builder.BuildRet(exitCode);
         }
         else
         {
             ctx.Builder.BuildCall2(userFnType, userMain, []);
+            ctx.StaticLifeCycle.EmitCallCleanUpStatics();
             ctx.Builder.BuildRet(LLVMValueRef.CreateConstInt(intType, 0, SignExtend: false));
         }
+
     }
 
     public unsafe void GenerateObjectFile(string outputFilePath, LLVMModuleRef module)

@@ -11,8 +11,15 @@ namespace BifyLang.CodeGen.Core.Class;
 
 public static class MemberResolver
 {
-    public static LLVMValueRef ResolveFieldPtr(CodeGenContext ctx, ICompositeType compositeType, LLVMValueRef instance, ClassField field) =>
-        ctx.Builder.BuildStructGEP2(compositeType.LlvmStructType, instance, (uint)field.Index, field.Name);
+    public static LLVMValueRef ResolveFieldPtr(CodeGenContext ctx, ICompositeType compositeType, LLVMValueRef instance,
+        ClassField field)
+    {
+        if (field.IsStatic)
+        {
+            return field.GlobalValue;
+        }
+        return ctx.Builder.BuildStructGEP2(compositeType.LlvmStructType, instance, (uint)field.Index, field.Name);
+    }
 
     public static bool TryResolveThisField(CodeGenContext ctx, string name, out LLVMValueRef fieldPtr, out ClassField field)
     {

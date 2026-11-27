@@ -12,7 +12,7 @@ public static class FlagChecker
     private static readonly HashSet<string> _functionFlags = ["public", "private"];
     private static readonly HashSet<string> _methodFlags = ["public", "private", "protected", "virtual", "override", "abstract", "final", "static"];
     private static readonly HashSet<string> _structMethodFlags = ["public", "private"];
-    private static readonly HashSet<string> _attributeFlags = ["public", "private", "protected", "weak", "mut", "val"];
+    private static readonly HashSet<string> _attributeFlags = ["public", "private", "protected", "weak", "mut", "val", "static"];
     private static readonly HashSet<string> _structAttributeFlags = ["public", "private", "mut", "val"];
     private static readonly HashSet<string> _classFlags = ["public", "private", "static", "final", "abstract"];
     private static readonly HashSet<string> _structFlags = ["public", "private"];
